@@ -18,7 +18,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     // initiate encoders
 		Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
-		Encoder rightEncoder = new Encoder(DriveConstants.rightEncoderPortA, DriveConstants.leftEncoderPortB, true, Encoder.EncodingType.k4X);
+    Encoder rightEncoder = new Encoder(DriveConstants.rightEncoderPortA, DriveConstants.leftEncoderPortB, true, Encoder.EncodingType.k4X);
+    
+    // TODO: setup Pigeon Gyro
+    // documentation starting page 30: https://www.ctr-electronics.com/downloads/pdf/Pigeon%20IMU%20User's%20Guide.pdf
     	
 
   public DriveSubsystem() {
@@ -65,6 +68,9 @@ public class DriveSubsystem extends SubsystemBase {
     		leftEncoder.reset();
         rightEncoder.reset();
     }
+
+    // TODO: setup getAngle and resetGyro methods for gyro
+    // documentation starting page 30: https://www.ctr-electronics.com/downloads/pdf/Pigeon%20IMU%20User's%20Guide.pdf
 
   @Override
   public void periodic() {

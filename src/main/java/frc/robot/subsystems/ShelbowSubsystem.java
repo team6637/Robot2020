@@ -17,10 +17,19 @@ public class ShelbowSubsystem extends SubsystemBase {
   WPI_TalonSRX masterMotor = new WPI_TalonSRX(ShelbowConstants.masterID);
   WPI_TalonSRX slaveMotor = new WPI_TalonSRX(ShelbowConstants.slaveID);
 
+  // TODO: Set up encoder
+  // see our wrist from last year lines 81 - 89
+  // https://github.com/team6637/Robot2019/blob/master/src/main/java/frc/robot/subsystems/Wrist.java
+
   public ShelbowSubsystem() {
 
   }
-  public void 
+
+  // TODO: set up some methods to getPosition and resetPosition
+  // see our wrist from last year lines 129 - 136
+  // https://github.com/team6637/Robot2019/blob/master/src/main/java/frc/robot/subsystems/Wrist.java
+
+
 
   @Override
   public void periodic() {

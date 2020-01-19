@@ -18,6 +18,9 @@ public class ShooterSubsystem extends SubsystemBase {
   WPI_TalonSRX topMotor = new WPI_TalonSRX(ShooterConstants.topMotorID);
   WPI_TalonSRX bottomMotor = new WPI_TalonSRX(ShooterConstants.bottomMotorID);
 
+  // TODO: setup integrated encoder
+  // see Lift from last year: https://github.com/team6637/Robot2019/blob/master/src/main/java/frc/robot/subsystems/Lift.java
+
   public ShooterSubsystem() {
 
   }
