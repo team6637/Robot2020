@@ -14,10 +14,14 @@ import frc.robot.Constants.IntakeConstants;
 public class IntakeSubsystem extends SubsystemBase {
 
   PWMSparkMax intakeMotor = new PWMSparkMax(IntakeConstants.motorPort);
+
+  // TODO: add a Pneumatic solenoid to lower/raise the intake
  
   public IntakeSubsystem() {
 
   }
+
+  // TODO: add the methods for the pneumatic controlled lower/raise of the intake
 
   public void acquire() {
     intakeMotor.set(IntakeConstants.speed);
