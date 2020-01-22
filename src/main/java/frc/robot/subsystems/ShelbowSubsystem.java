@@ -7,8 +7,10 @@
 
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
+import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShelbowConstants;
 
@@ -17,18 +19,23 @@ public class ShelbowSubsystem extends SubsystemBase {
   WPI_TalonSRX masterMotor = new WPI_TalonSRX(ShelbowConstants.masterID);
   WPI_TalonSRX slaveMotor = new WPI_TalonSRX(ShelbowConstants.slaveID);
 
-  // TODO: Set up encoder
-  // see our wrist from last year lines 81 - 89
-  // https://github.com/team6637/Robot2019/blob/master/src/main/java/frc/robot/subsystems/Wrist.java
-
+  DifferentialDrive drive = new DifferentialDrive(masterMotor, slaveMotor);
+  
+  public void shelbowFlex(double move){
+  masterMotor.set(move);
+  }
+  
   public ShelbowSubsystem() {
-
+    masterMotor.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
+    masterMotor.setSensorPhase(false);
   }
 
-  // TODO: set up some methods to getPosition and resetPosition
-  // see our wrist from last year lines 129 - 136
-  // https://github.com/team6637/Robot2019/blob/master/src/main/java/frc/robot/subsystems/Wrist.java
-
+   public double getPosition() {
+    return masterMotor.getSelectedSensorPosition();
+  }
+  public void resetPosition() {
+    masterMotor.setSelectedSensorPosition(2000, 0, 10);
+  }
 
 
   @Override

@@ -72,6 +72,10 @@ public class RobotContainer {
       new RunCommand(() -> driveSubsystem.arcadeDrive(-driverStick.getY(), driverStick.getTwist()), driveSubsystem)
     );
 
+    shelbowSubsystem.setDefaultCommand(
+      new RunCommand(() -> shelbowSubsystem.shelbowFlex(-operatorStick.getY()), driveSubsystem)
+    );
+
     // Add commands to the autonomous command chooser
     m_chooser.addOption("Test Auto", m_simpleAuto);
 
@@ -93,7 +97,7 @@ public class RobotContainer {
 
     // mow the lawn
     new JoystickButton(operatorStick, 2).whenPressed(
-      new InstantCommand(intakeSubsystem::aquire, intakeSubsystem)
+      new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
     ).whenReleased(
       new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
     );
@@ -102,13 +106,6 @@ public class RobotContainer {
     /**
      * Shelbow 
      */ 
-    
-    new JoystickButton(operatorStick, ).whenPressed(
-      new InstantCommand(shelbowSubsystem::, shelbowSubsystem)
-    ).whenReleased(
-      new InstantCommand(shelbowSubsystem::, shelbowSubsystem)
-    );
-
 
     /**
      * Indexer 

@@ -19,7 +19,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
   }
 
-  public void aquire() {
+  public void acquire() {
     intakeMotor.set(IntakeConstants.speed);
   }
 

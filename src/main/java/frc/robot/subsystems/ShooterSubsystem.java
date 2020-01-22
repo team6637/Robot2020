@@ -8,6 +8,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -18,11 +20,12 @@ public class ShooterSubsystem extends SubsystemBase {
   WPI_TalonSRX topMotor = new WPI_TalonSRX(ShooterConstants.topMotorID);
   WPI_TalonSRX bottomMotor = new WPI_TalonSRX(ShooterConstants.bottomMotorID);
 
-  // TODO: setup integrated encoder
-  // see Lift from last year: https://github.com/team6637/Robot2019/blob/master/src/main/java/frc/robot/subsystems/Lift.java
-
+ 
   public ShooterSubsystem() {
-
+    topMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);	
+    topMotor.setSensorPhase(false);
+    topMotor.setInverted(false);
+    topMotor.setNeutralMode(NeutralMode.Brake);
   }
 
   public void spin(double speed) {
