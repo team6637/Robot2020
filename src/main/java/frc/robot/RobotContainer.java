@@ -102,9 +102,12 @@ public class RobotContainer {
       new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
     );
     
-    // TODO: setup a button that spins the intake and the indexer
-    // eventually, once we have setpoints on the shelbow, we will want to also move it to the highest position automatically
-    // upon release, reverse the indexer for a half second so the balls aren't pressed agains the shooter
+    
+    new JoystickButton(operatorStick, 2).whenPressed(
+      new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
+    ).whenReleased(
+      new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
+    );
     
     /**
      * Shelbow 
@@ -134,9 +137,7 @@ public class RobotContainer {
     
      // yeet em
     new JoystickButton(driverStick, 1).whenPressed(
-
-      // TODO: fix this error. Spin needs an argument for the speed property. It can be passed here or we completely remove the argument and add the speed right in the subsystem if it will never change.
-      new InstantCommand(shooterSubsystem::spin, shooterSubsystem)
+      new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
     ).whenReleased(
       new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
     );

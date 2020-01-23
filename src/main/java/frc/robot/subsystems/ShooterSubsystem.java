@@ -31,9 +31,9 @@ public class ShooterSubsystem extends SubsystemBase {
     // also setup other settings like you did for the top (change neutral mode to coast)
   }
 
-  public void spin(double speed) {
-    topMotor.set(ControlMode.PercentOutput, speed);
-    bottomMotor.set(ControlMode.PercentOutput, speed);
+  public void shoot() {
+    topMotor.set(ControlMode.PercentOutput, ShooterConstants.speed);
+    bottomMotor.set(ControlMode.PercentOutput, ShooterConstants.speed);
   }
 
   public void stop() {
