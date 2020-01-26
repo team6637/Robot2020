@@ -13,27 +13,31 @@ import frc.robot.Constants.IndexerConstants;
 
 public class IndexerSubsystem extends SubsystemBase {
 
-  PWMSparkMax topIndexerMotor = new PWMSparkMax(IndexerConstants.topMotorPort);
-  PWMSparkMax bottomIndexerMotor = new PWMSparkMax(IndexerConstants.bottomMotorPort);
+  PWMSparkMax topMotor = new PWMSparkMax(IndexerConstants.topMotorPort);
+  PWMSparkMax bottomMotor = new PWMSparkMax(IndexerConstants.bottomMotorPort);
  
   public IndexerSubsystem() {
 
-  }
+    // TODO: add NeutralMode Coast here. (see drivetrain)
+    // add setInverted(false) here, see shooter
 
+  }
+  
   public void forward() {
-    topIndexerMotor.set(IndexerConstants.speed);
-    bottomIndexerMotor.set(IndexerConstants.speed);
+    topMotor.set(IndexerConstants.speed);
+    bottomMotor.set(IndexerConstants.speed);
   }
 
+  // TODO: this shouldn't be negative
+  // you'll have to change this to positive speed and switch the wires on the motor
   public void backward() {
-    topIndexerMotor.set(-IndexerConstants.speed);
-    bottomIndexerMotor.set(-IndexerConstants.speed);
-
+    topMotor.set(-IndexerConstants.speed);
+    bottomMotor.set(-IndexerConstants.speed);
   }
 
   public void stop() {
-    topIndexerMotor.set(0);
-    bottomIndexerMotor.set(0);
+    topMotor.set(0);
+    bottomMotor.set(0);
   }
 
   @Override

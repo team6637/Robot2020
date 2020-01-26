@@ -1,11 +1,10 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.commands.AutoCommand1;
+import frc.robot.commands.CPSpinCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExtenderSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -32,7 +31,6 @@ public class RobotContainer {
    * Subsystems
    * 
    */
-  private final DriveSubsystem driveSubsystem = new DriveSubsystem();
   private final ExtenderSubsystem extenderSubsystem = new ExtenderSubsystem();
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
@@ -41,13 +39,14 @@ public class RobotContainer {
   private final SpinnerSubsystem spinnerSubsystem = new SpinnerSubsystem();
   private final WinchSubsystem winchSubsystem = new WinchSubsystem();
 
+  // pass the shelbow talon into the driveSubsystem's contstuctor to give to the gyro
+  private final DriveSubsystem driveSubsystem = new DriveSubsystem(shelbowSubsystem.getMasterReference());
 
   /**
    * 
    * Commands n Stuff
    * 
    */
-  //private final ManualDriveCommand manualDriveCommand = new ManualDriveCommand();
   //private final ExampleCommand autoCommand = new ExampleCommand(subsystem);
   
   // setup auton
@@ -73,7 +72,7 @@ public class RobotContainer {
     );
 
     shelbowSubsystem.setDefaultCommand(
-      new RunCommand(() -> shelbowSubsystem.shelbowFlex(-operatorStick.getY()), driveSubsystem)
+      new RunCommand(() -> shelbowSubsystem.shelbowFlex(-operatorStick.getY()), shelbowSubsystem)
     );
 
     // Add commands to the autonomous command chooser
@@ -96,36 +95,36 @@ public class RobotContainer {
      */
 
     // mow the lawn
-    new JoystickButton(operatorStick, 2).whenPressed(
+    new JoystickButton(driverStick, 2).whenPressed(
       new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
     ).whenReleased(
       new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
     );
     
     
-    new JoystickButton(operatorStick, 2).whenPressed(
-      new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
-    ).whenReleased(
-      new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
-    );
-    
     /**
      * Shelbow 
      */ 
+
+
+
+
+
+
 
     /**
      * Indexer 
      */
     // Spin up the indexer when the #6 button is pressed
-    new JoystickButton(operatorStick, 6).whenPressed(
+    new JoystickButton(driverStick, 6).whenPressed(
       new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
     ).whenReleased(
       new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
     );
 
     // reverse, reverse! 
-    new JoystickButton(operatorStick, 4).whenPressed(
-      new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
+    new JoystickButton(driverStick, 4).whenPressed(
+      new InstantCommand(indexerSubsystem::backward, indexerSubsystem)
     ).whenReleased(
       new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
     );
@@ -154,22 +153,36 @@ public class RobotContainer {
       new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
     );
 
-    // TODO: setup a button and command for spinning the spinner a predetermined amount of encoder ticks
+    // setup a button and command for spinning the spinner a predetermined amount of encoder ticks
+    new JoystickButton(operatorStick, 9).whenPressed(
+      new CPSpinCommand(spinnerSubsystem)
+    );
     
-    
+    new JoystickButton(operatorStick, 10).whenPressed(
+      new InstantCommand(spinnerSubsystem::raise, spinnerSubsystem)
+    ).whenReleased(
+      new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
+    );
+
+    new JoystickButton(operatorStick, 12).whenPressed(
+      new InstantCommand(spinnerSubsystem::lower, spinnerSubsystem)
+    ).whenReleased(
+      new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
+    );
+
     /**
      * Extender 
      */
 
     // extend to climb
-    new JoystickButton(driverStick, 8).whenPressed(
+    new JoystickButton(driverStick, 9).whenPressed(
       new InstantCommand(extenderSubsystem::extend, extenderSubsystem)
     ).whenReleased(
       new InstantCommand(extenderSubsystem::stop, extenderSubsystem)
     );
 
     //retract
-    new JoystickButton(driverStick, 7).whenPressed(
+    new JoystickButton(driverStick, 10).whenPressed(
       new InstantCommand(extenderSubsystem::retract, extenderSubsystem)
     ).whenReleased(
       new InstantCommand(extenderSubsystem::stop, extenderSubsystem)
@@ -181,7 +194,7 @@ public class RobotContainer {
      */
   
     // climb
-    new JoystickButton(operatorStick, 9).whenPressed(
+    new JoystickButton(operatorStick, 12).whenPressed(
       new InstantCommand(winchSubsystem::liftoff, winchSubsystem)
     ).whenReleased(
       new InstantCommand(winchSubsystem::hold, winchSubsystem)

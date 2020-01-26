@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.CalibrationMode;
@@ -21,53 +22,58 @@ public class DriveSubsystem extends SubsystemBase {
 
   // initiate encoders
   Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
-  Encoder rightEncoder = new Encoder(DriveConstants.rightEncoderPortA, DriveConstants.leftEncoderPortB, true, Encoder.EncodingType.k4X);
+  Encoder rightEncoder = new Encoder(DriveConstants.rightEncoderPortA, DriveConstants.rightEncoderPortB, true, Encoder.EncodingType.k4X);
 
-  PigeonIMU gyro = new PigeonIMU(8);
+  // gyro
+  PigeonIMU gyro;
 
-  public DriveSubsystem() {
+  public DriveSubsystem(WPI_TalonSRX shelbowMaster) {
 
-  leftSlave.follow(leftMaster);
-  rightSlave.follow(rightMaster);
+    // pass the shelbow talon into the gyro so the gyro knows which talon it's plugged into
+    gyro = new PigeonIMU(shelbowMaster);
 
-  //DIO ports
-  leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
-  rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
+    leftMaster.setNeutralMode(NeutralMode.Coast);
+    leftSlave.setNeutralMode(NeutralMode.Coast);
+    rightMaster.setNeutralMode(NeutralMode.Coast);
+    rightSlave.setNeutralMode(NeutralMode.Coast);
+
+    leftSlave.follow(leftMaster);
+    rightSlave.follow(rightMaster);
+
+    //DIO ports
+    leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
+    rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
 
   }
 
   public void arcadeDrive(double move, double turn){
-  drive.arcadeDrive(move, turn);
-  }
-
-  public void initDefaultCommand() {
-      // Set the default command for a subsystem here.
-      //setDefaultCommand(new MySpecialCommand());
+    turn = turn * 0.6;
+    drive.arcadeDrive(move, turn);
   }
 
   public double getLeftDistance(){
-  return -leftEncoder.getDistance();
+    return -leftEncoder.getDistance();
   }
 
   public double getLeftRate(){
-  return leftEncoder.getRate();	
+    return leftEncoder.getRate();	
   }    
 
   public double getRightDistance(){
-      return rightEncoder.getDistance();
+    return rightEncoder.getDistance();
   }
 
   public double getRightRate(){
-      return rightEncoder.getRate();
+    return rightEncoder.getRate();
   }
 
   public double getAverageDistance(){
-      return (getLeftDistance() + getRightDistance()) / 2;
+    return (getLeftDistance() + getRightDistance()) / 2;
   }
 
   public void resetEncoders(){
-      leftEncoder.reset();
-      rightEncoder.reset();
+    leftEncoder.reset();
+    rightEncoder.reset();
   }
   
   public double getAngle() {

@@ -7,14 +7,6 @@
 
 package frc.robot;
 
-/**
- * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
- * constants.  This class should not be used for any other purpose.  All constants should be
- * declared globally (i.e. public static).  Do not put anything functional in this class.
- *
- * <p>It is advised to statically import this class (or one of its inner classes) wherever the
- * constants are needed, to reduce verbosity.
- */
 public final class Constants {
 
 
@@ -30,13 +22,12 @@ public final class Constants {
         public static final int leftSlaveID = 2;
         public static final int rightMasterID = 3;
         public static final int rightSlaveID = 4;
-        // TODO: setup a variable for pigeon gyro for the CAN bus
 
         // DIO
-        public static final int leftEncoderPortA = 0;
-        public static final int leftEncoderPortB = 1;
-        public static final int rightEncoderPortA = 2;
-        public static final int rightEncoderPortB = 3;
+        public static final int leftEncoderPortA = 9;
+        public static final int leftEncoderPortB = 8;
+        public static final int rightEncoderPortA = 7;
+        public static final int rightEncoderPortB = 6;
 
         public static final double wheelDiameter = 0.2032;
         public static final double pulsePerRevolution = 360;
@@ -51,9 +42,9 @@ public final class Constants {
     public static final class IntakeConstants {
 
         // PWM
-        public static final int motorPort = 0;
+        public static final int motorPort = 7;
 
-        public static final double speed = 0.6;
+        public static final double speed = 0.4;
     }
 
     
@@ -80,10 +71,12 @@ public final class Constants {
     public static final class IndexerConstants {
 
         // PWM
-        public static final int topMotorPort = 3;
-        public static final int bottomMotorPort = 4;
+        public static final int topMotorPort = 5;
+        public static final int bottomMotorPort = 6;
 
-        public static final double speed = 0.4;
+        // TODO: we should never run motors with this low of speed
+        // please make sure fab team adds some gear reduction to indexer so we can bring this value up!
+        public static final double speed = 0.2;
     }
     
     
@@ -98,7 +91,10 @@ public final class Constants {
         public static final int topMotorID = 6;
         public static final int bottomMotorID = 7;
 
-        public static final double speed = 0.8;
+        // TODO: switch wires on shooter motors and take away the negative here. 
+        // we need these motors driving forward. Which means the talons have to be green while shooting
+        // (ask mr j to help)
+        public static final double speed = -0.8;
     }
 
 
@@ -110,7 +106,7 @@ public final class Constants {
     public static final class ExtenderConstants {
 
         // PWM
-        public static final int motorPort = 2;
+        public static final int motorPort = 8;
 
         public static final double speed = 0.7;
     }
@@ -124,7 +120,7 @@ public final class Constants {
     public static final class WinchConstants {
 
         // PWM
-        public static final int motorPort = 1;
+        public static final int motorPort = 9;
 
         public static final double speed = 0.6;
     }
@@ -140,6 +136,13 @@ public final class Constants {
         // CAN
         public static final int motorID = 5;
 
-        public static final double speed = 0.8;
+        public static final double speed = 0.6;
+
+        //mathing
+        public static final int encoderCPR = 1024;
+        public final static double wheelDiameter = 2.0;
+        public final static double targetSpins = 3.5;
+        public final static double spinCPCounts = ((100 /(wheelDiameter * Math.PI)) * targetSpins) * encoderCPR;
+
     }
 }

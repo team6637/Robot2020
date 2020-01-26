@@ -21,14 +21,17 @@ public class ShooterSubsystem extends SubsystemBase {
   WPI_TalonSRX bottomMotor = new WPI_TalonSRX(ShooterConstants.bottomMotorID);
   
   public ShooterSubsystem() {
+    //top motor
     topMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);	
     topMotor.setSensorPhase(false);
     topMotor.setInverted(false);
-    // TODO : change neutral mode to coast instead of brake. This way the shooter doesn't brake when not in use, we want it to keep spinning (coasting)
-    topMotor.setNeutralMode(NeutralMode.Brake);
+    topMotor.setNeutralMode(NeutralMode.Coast);
 
-    // TODO: we will be using an integrated encoder on each motor, so please setup one for the bottom motor
-    // also setup other settings like you did for the top (change neutral mode to coast)
+    //bottom motor
+    bottomMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);	
+    bottomMotor.setSensorPhase(false);
+    bottomMotor.setInverted(false);
+    bottomMotor.setNeutralMode(NeutralMode.Coast);
   }
 
   public void shoot() {
@@ -41,11 +44,15 @@ public class ShooterSubsystem extends SubsystemBase {
     bottomMotor.set(0);
   }
 
+  // get velocity
+  public double getTopVelocity() {
+    return topMotor.getSelectedSensorVelocity();
+  }
 
-  // TODO: set up encoder methods to get and reset the current encoder position
-  // look on line 130 here for the getPosition and resetPosition methods for both motors: https://github.com/team6637/Robot2019/blob/master/src/main/java/frc/robot/subsystems/Wrist.java
-  // also setup a getVelocity method for both methods which we will use in our velocity PID control
-
+  public double getBottomVelocity() {
+    return bottomMotor.getSelectedSensorVelocity();
+  }
+ 
 
   @Override
   public void periodic() {

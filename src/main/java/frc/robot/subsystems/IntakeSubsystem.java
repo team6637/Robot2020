@@ -7,6 +7,7 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
@@ -15,13 +16,22 @@ public class IntakeSubsystem extends SubsystemBase {
 
   PWMSparkMax intakeMotor = new PWMSparkMax(IntakeConstants.motorPort);
 
-  // TODO: add a Pneumatic solenoid to lower/raise the intake
+  DoubleSolenoid solenoid = new DoubleSolenoid(2, 3);
  
   public IntakeSubsystem() {
 
+    // TODO: add neutral mode coast and setInverted(false) code here. see indexer
+
   }
 
-  // TODO: add the methods for the pneumatic controlled lower/raise of the intake
+  public void lower() {
+    solenoid.set(DoubleSolenoid.Value.kReverse);
+  }
+
+  public void raise() {
+    solenoid.set(DoubleSolenoid.Value.kForward);
+  }
+
 
   public void acquire() {
     intakeMotor.set(IntakeConstants.speed);
