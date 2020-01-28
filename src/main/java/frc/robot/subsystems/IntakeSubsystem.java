@@ -20,8 +20,6 @@ public class IntakeSubsystem extends SubsystemBase {
  
   public IntakeSubsystem() {
 
-    // TODO: add neutral mode coast and setInverted(false) code here. see indexer
-
   }
 
   public void lower() {
@@ -38,7 +36,7 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    intakeMotor.set(0);
+    intakeMotor.set(0.0);
   }
 
   @Override

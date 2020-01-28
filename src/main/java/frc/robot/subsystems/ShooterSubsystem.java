@@ -40,8 +40,8 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    topMotor.set(0);
-    bottomMotor.set(0);
+    topMotor.set(0.0);
+    bottomMotor.set(0.0);
   }
 
   // get velocity

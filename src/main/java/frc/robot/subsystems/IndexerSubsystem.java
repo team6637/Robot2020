@@ -18,9 +18,6 @@ public class IndexerSubsystem extends SubsystemBase {
  
   public IndexerSubsystem() {
 
-    // TODO: add NeutralMode Coast here. (see drivetrain)
-    // add setInverted(false) here, see shooter
-
   }
   
   public void forward() {
@@ -28,16 +25,14 @@ public class IndexerSubsystem extends SubsystemBase {
     bottomMotor.set(IndexerConstants.speed);
   }
 
-  // TODO: this shouldn't be negative
-  // you'll have to change this to positive speed and switch the wires on the motor
   public void backward() {
     topMotor.set(-IndexerConstants.speed);
     bottomMotor.set(-IndexerConstants.speed);
   }
 
   public void stop() {
-    topMotor.set(0);
-    bottomMotor.set(0);
+    topMotor.set(0.0);
+    bottomMotor.set(0.0);
   }
 
   @Override

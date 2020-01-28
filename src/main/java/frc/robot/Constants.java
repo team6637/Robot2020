@@ -71,12 +71,10 @@ public final class Constants {
     public static final class IndexerConstants {
 
         // PWM
-        public static final int topMotorPort = 5;
-        public static final int bottomMotorPort = 6;
+        public static final int topMotorPort = 6;
+        public static final int bottomMotorPort = 5;
 
-        // TODO: we should never run motors with this low of speed
-        // please make sure fab team adds some gear reduction to indexer so we can bring this value up!
-        public static final double speed = 0.2;
+        public static final double speed = 0.5;
     }
     
     
@@ -94,7 +92,7 @@ public final class Constants {
         // TODO: switch wires on shooter motors and take away the negative here. 
         // we need these motors driving forward. Which means the talons have to be green while shooting
         // (ask mr j to help)
-        public static final double speed = -0.8;
+        public static final double speed = 0.8;
     }
 
 
