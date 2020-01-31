@@ -30,7 +30,7 @@ public final class Constants {
         public static final int rightEncoderPortB = 6;
 
         public static final double wheelDiameter = 0.2032;
-        public static final double pulsePerRevolution = 360;
+        public static final int pulsePerRevolution = 360;
     }
 
 

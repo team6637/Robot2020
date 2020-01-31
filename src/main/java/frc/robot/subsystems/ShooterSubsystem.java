@@ -39,6 +39,11 @@ public class ShooterSubsystem extends SubsystemBase {
     bottomMotor.set(ControlMode.PercentOutput, ShooterConstants.speed);
   }
 
+  public void backwardSlow() {
+    topMotor.set(ControlMode.PercentOutput, -0.2);
+    bottomMotor.set(ControlMode.PercentOutput, -0.2);
+  }
+
   public void stop() {
     topMotor.set(0.0);
     bottomMotor.set(0.0);
@@ -51,6 +56,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
   public double getBottomVelocity() {
     return bottomMotor.getSelectedSensorVelocity();
+  }
+  
+
+  // temporary
+  public boolean atSetpoint() {
+    return true;
   }
  
 

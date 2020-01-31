@@ -1,5 +1,7 @@
 package frc.robot;
 
+import java.util.concurrent.locks.Condition;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -14,8 +16,11 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SpinnerSubsystem;
 import frc.robot.subsystems.WinchSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
@@ -95,11 +100,64 @@ public class RobotContainer {
      */
 
     // mow the lawn
+    // new JoystickButton(driverStick, 2).whenPressed(
+    //   new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
+    // ).whenReleased(
+    //   new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
+    // );
+
+    // Full Intake Routine
     new JoystickButton(driverStick, 2).whenPressed(
-      new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
+      new ParallelCommandGroup(
+        //raise shelbow
+        new InstantCommand(intakeSubsystem::acquire, intakeSubsystem),
+        new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
+        new InstantCommand(shooterSubsystem::backwardSlow, shooterSubsystem)
+      )
     ).whenReleased(
-      new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
+      new ParallelCommandGroup(
+        new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
+        new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
+        new StartEndCommand(
+          () -> indexerSubsystem.backward(),
+          () -> indexerSubsystem.stop(),
+          indexerSubsystem
+        ).withTimeout(0.2)
+      )
     );
+
+
+    // shoot
+    new JoystickButton(driverStick, 1).whenPressed(
+      new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
+    ).whileHeld(
+      new ConditionalCommand(
+        // if true
+        new ParallelCommandGroup(
+         new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
+         new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
+        ),
+        // if false
+        new ParallelCommandGroup(
+          new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
+          new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
+        ),
+        // the condition
+        shooterSubsystem::atSetpoint
+      )
+    ).whenReleased(
+      new ParallelCommandGroup(
+        new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
+        new InstantCommand(indexerSubsystem::stop, indexerSubsystem), 
+        new InstantCommand(intakeSubsystem::stop, intakeSubsystem)      
+      )
+      )
+    );
+
+
+
+
+
     
     /**
      * Shelbow 
@@ -134,11 +192,11 @@ public class RobotContainer {
      */
     
      // yeet em
-    new JoystickButton(driverStick, 1).whenPressed(
-      new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
-    ).whenReleased(
-      new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
-    );
+    // new JoystickButton(driverStick, 1).whenPressed(
+    //   new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
+    // ).whenReleased(
+    //   new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
+    // );
     
 
     /**
