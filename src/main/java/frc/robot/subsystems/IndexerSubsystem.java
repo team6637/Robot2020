@@ -17,6 +17,8 @@ public class IndexerSubsystem extends SubsystemBase {
   PWMSparkMax bottomMotor = new PWMSparkMax(IndexerConstants.bottomMotorPort);
  
   public IndexerSubsystem() {
+    topMotor.setInverted(true);
+    bottomMotor.setInverted(true);
 
   }
   

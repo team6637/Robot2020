@@ -19,14 +19,13 @@ public class SpinnerSubsystem extends SubsystemBase {
 
   public WPI_TalonSRX spinMotor = new WPI_TalonSRX(SpinnerConstants.motorID);
 
-  DoubleSolenoid solenoid = new DoubleSolenoid(0, 1);
+  DoubleSolenoid solenoid = new DoubleSolenoid(2, 3);
  
   public SpinnerSubsystem() {
     spinMotor.configSelectedFeedbackSensor(FeedbackDevice.QuadEncoder, 0, 10);	
     spinMotor.setSensorPhase(false);
     spinMotor.setInverted(false);
     spinMotor.setNeutralMode(NeutralMode.Coast);
-   
   }
 
   public void lower() {
@@ -41,7 +40,6 @@ public class SpinnerSubsystem extends SubsystemBase {
     spinMotor.set(SpinnerConstants.speed);
   }
 
-  
   public void stop() {
     spinMotor.set(0);
   }
@@ -53,9 +51,6 @@ public class SpinnerSubsystem extends SubsystemBase {
   public void resetPosition() {
     spinMotor.setSelectedSensorPosition(2000, 0, 10);
   }
-
-  
-
   
   @Override
   public void periodic() {

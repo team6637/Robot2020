@@ -1,7 +1,5 @@
 package frc.robot;
 
-import java.util.concurrent.locks.Condition;
-
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -40,7 +38,7 @@ public class RobotContainer {
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
   private final ShelbowSubsystem shelbowSubsystem = new ShelbowSubsystem();
-  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(true);
   private final SpinnerSubsystem spinnerSubsystem = new SpinnerSubsystem();
   private final WinchSubsystem winchSubsystem = new WinchSubsystem();
 
@@ -99,21 +97,29 @@ public class RobotContainer {
      * Intake 
      */
 
-    // mow the lawn
-    // new JoystickButton(driverStick, 2).whenPressed(
-    //   new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
-    // ).whenReleased(
-    //   new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
-    // );
+    new JoystickButton(driverStick, 5).whenPressed(
+      new InstantCommand(intakeSubsystem::raise, intakeSubsystem)
+    );
 
-    // Full Intake Routine
-    new JoystickButton(driverStick, 2).whenPressed(
+    new JoystickButton(driverStick, 3).whenPressed(
+      new InstantCommand(intakeSubsystem::lower, intakeSubsystem)
+    );
+
+
+
+    /**
+     * Full Intake Routine 
+     */
+    
+     // button pressed: raise arm, run intake, run indexer
+     new JoystickButton(driverStick, 2).whenPressed(
       new ParallelCommandGroup(
-        //raise shelbow
+        // todo: raise shelbow
         new InstantCommand(intakeSubsystem::acquire, intakeSubsystem),
-        new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
-        new InstantCommand(shooterSubsystem::backwardSlow, shooterSubsystem)
+        new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
       )
+    
+    // button released: stop shooter, stop intake, back balls up a scootch in indexer, then stop it
     ).whenReleased(
       new ParallelCommandGroup(
         new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
@@ -122,14 +128,22 @@ public class RobotContainer {
           () -> indexerSubsystem.backward(),
           () -> indexerSubsystem.stop(),
           indexerSubsystem
-        ).withTimeout(0.2)
+        ).withTimeout(0.05)
       )
     );
 
 
-    // shoot
+    
+    /**
+     * Full Intake Routine 
+     */
+    
+    // button pressed: start shooter velocity control
     new JoystickButton(driverStick, 1).whenPressed(
-      new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
+      new InstantCommand(shooterSubsystem::setVelocity, shooterSubsystem)
+
+    // while button pressed: if shooter is at velocity, run indexer and intake forward
+    // if not, stop indexer and intake
     ).whileHeld(
       new ConditionalCommand(
         // if true
@@ -145,16 +159,18 @@ public class RobotContainer {
         // the condition
         shooterSubsystem::atSetpoint
       )
+    
+    // button released: stop intake, back balls up a scootch in indexer, then stop it
     ).whenReleased(
       new ParallelCommandGroup(
-        new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
-        new InstantCommand(indexerSubsystem::stop, indexerSubsystem), 
-        new InstantCommand(intakeSubsystem::stop, intakeSubsystem)      
-      )
+        new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
+        new StartEndCommand(
+          () -> indexerSubsystem.backward(),
+          () -> indexerSubsystem.stop(),
+          indexerSubsystem
+        ).withTimeout(0.05)
       )
     );
-
-
 
 
 
@@ -172,7 +188,7 @@ public class RobotContainer {
     /**
      * Indexer 
      */
-    // Spin up the indexer when the #6 button is pressed
+    // forward
     new JoystickButton(driverStick, 6).whenPressed(
       new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
     ).whenReleased(
@@ -186,17 +202,6 @@ public class RobotContainer {
       new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
     );
 
-    
-    /**
-     * Shooter 
-     */
-    
-     // yeet em
-    // new JoystickButton(driverStick, 1).whenPressed(
-    //   new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
-    // ).whenReleased(
-    //   new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
-    // );
     
 
     /**

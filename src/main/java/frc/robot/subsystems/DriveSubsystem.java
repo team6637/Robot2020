@@ -7,6 +7,7 @@ import com.ctre.phoenix.sensors.PigeonIMU.CalibrationMode;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 
@@ -29,11 +30,19 @@ public class DriveSubsystem extends SubsystemBase {
 
   public DriveSubsystem(WPI_TalonSRX shelbowMaster) {
 
+    drive.setRightSideInverted(false);
+
     // pass the shelbow talon into the gyro so the gyro knows which talon it's plugged into
     gyro = new PigeonIMU(shelbowMaster);
 
     leftMaster.setNeutralMode(NeutralMode.Coast);
     leftSlave.setNeutralMode(NeutralMode.Coast);
+
+    leftMaster.setInverted(false);
+    leftSlave.setInverted(false);
+    rightMaster.setInverted(true);
+    rightSlave.setInverted(true);
+
     rightMaster.setNeutralMode(NeutralMode.Coast);
     rightSlave.setNeutralMode(NeutralMode.Coast);
 
@@ -52,7 +61,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getLeftDistance(){
-    return -leftEncoder.getDistance();
+    return leftEncoder.getDistance();
   }
 
   public double getLeftRate(){
@@ -93,6 +102,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-  // This method will be called once per scheduler run
+    SmartDashboard.putNumber("gyro", getAngle());
+    SmartDashboard.putNumber("left encoder", getLeftDistance());
+    SmartDashboard.putNumber("right encoder", getRightDistance());  
   }
 }

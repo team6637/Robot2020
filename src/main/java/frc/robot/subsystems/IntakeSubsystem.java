@@ -16,10 +16,11 @@ public class IntakeSubsystem extends SubsystemBase {
 
   PWMSparkMax intakeMotor = new PWMSparkMax(IntakeConstants.motorPort);
 
-  DoubleSolenoid solenoid = new DoubleSolenoid(2, 3);
+  DoubleSolenoid solenoid = new DoubleSolenoid(0, 1);
  
   public IntakeSubsystem() {
-
+    intakeMotor.setInverted(false);
+    raise();
   }
 
   public void lower() {

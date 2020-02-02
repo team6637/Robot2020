@@ -7,6 +7,8 @@
 
 package frc.robot;
 
+import util.Gains;
+
 public final class Constants {
 
 
@@ -74,7 +76,7 @@ public final class Constants {
         public static final int topMotorPort = 6;
         public static final int bottomMotorPort = 5;
 
-        public static final double speed = 0.5;
+        public static final double speed = 1.0;
     }
     
     
@@ -89,10 +91,21 @@ public final class Constants {
         public static final int topMotorID = 6;
         public static final int bottomMotorID = 7;
 
-        // TODO: switch wires on shooter motors and take away the negative here. 
-        // we need these motors driving forward. Which means the talons have to be green while shooting
-        // (ask mr j to help)
         public static final double speed = 0.8;
+
+        public static final double topTargetRPM = 2500.0;
+        public static final double bottomTargetRPM = 4700.0;
+
+        public static final double unitsPerRotation = 4096.0;
+
+        public static final double tolerance = 200.0;
+
+        public static final int kPIDLoopIdx = 0;
+        public static final int kTimeoutMs = 30;
+
+        // kP, kI, kD, kF
+        public static final Gains topGains = new Gains(1.65, 0.0, 40.0, 0.6, true, "shooter top");
+        public static final Gains bottomGains = new Gains(1.65, 0.0, 40.0, 0.6, true, "shooter bottom");
     }
 
 
@@ -137,10 +150,10 @@ public final class Constants {
         public static final double speed = 0.6;
 
         //mathing
-        public static final int encoderCPR = 1024;
+        public static final int unitsPerRotation = 4096;
         public final static double wheelDiameter = 2.0;
         public final static double targetSpins = 3.5;
-        public final static double spinCPCounts = ((100 /(wheelDiameter * Math.PI)) * targetSpins) * encoderCPR;
+        public final static double targetUnitsForTargetSpins = ((100 /(wheelDiameter * Math.PI)) * targetSpins) * unitsPerRotation;
 
     }
 }
