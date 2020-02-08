@@ -13,6 +13,7 @@ import frc.robot.Constants.ExtenderConstants;
 
 public class ExtenderSubsystem extends SubsystemBase {
   
+  //Spark extenderMotor = new Spark(ExtenderConstants.motorPort);
   Spark extenderMotor = new Spark(ExtenderConstants.motorPort);
 
   public ExtenderSubsystem() {

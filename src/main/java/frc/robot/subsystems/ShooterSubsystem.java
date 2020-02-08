@@ -14,6 +14,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
+import util.Gains;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -30,8 +31,15 @@ public class ShooterSubsystem extends SubsystemBase {
   double topTargetRPM = ShooterConstants.topTargetRPM;
   double bottomTargetRPM = ShooterConstants.bottomTargetRPM;
 
+  Gains topGains;
+  Gains bottomGains;
+
   public ShooterSubsystem(boolean tunable) {
     m_tunable = tunable;
+
+    // kP, kI, kD, kF
+    topGains = new Gains(1.65, 0.0, 40.0, 0.6, m_tunable, "shooter top");
+    bottomGains = new Gains(1.65, 0.0, 40.0, 0.6, m_tunable, "shooter bottom");
 
     // config factory defaults for top and bottom
     topMotor.configFactoryDefault();
@@ -60,17 +68,17 @@ public class ShooterSubsystem extends SubsystemBase {
 		bottomMotor.configPeakOutputReverse(-1, ShooterConstants.kTimeoutMs);
 
     // config fpid for top and bottom
-		topMotor.config_kP(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKP(), ShooterConstants.kTimeoutMs);
-		topMotor.config_kI(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKI(), ShooterConstants.kTimeoutMs);
-		topMotor.config_kD(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKD(), ShooterConstants.kTimeoutMs);
-    topMotor.config_kF(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKF(), ShooterConstants.kTimeoutMs);
+		topMotor.config_kP(ShooterConstants.kPIDLoopIdx, topGains.getKP(), ShooterConstants.kTimeoutMs);
+		topMotor.config_kI(ShooterConstants.kPIDLoopIdx, topGains.getKI(), ShooterConstants.kTimeoutMs);
+		topMotor.config_kD(ShooterConstants.kPIDLoopIdx, topGains.getKD(), ShooterConstants.kTimeoutMs);
+    topMotor.config_kF(ShooterConstants.kPIDLoopIdx, topGains.getKF(), ShooterConstants.kTimeoutMs);
 
-		bottomMotor.config_kP(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKP(), ShooterConstants.kTimeoutMs);
-		bottomMotor.config_kI(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKI(), ShooterConstants.kTimeoutMs);
-    bottomMotor.config_kD(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKD(), ShooterConstants.kTimeoutMs);
-    bottomMotor.config_kF(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKF(), ShooterConstants.kTimeoutMs);
+		bottomMotor.config_kP(ShooterConstants.kPIDLoopIdx, bottomGains.getKP(), ShooterConstants.kTimeoutMs);
+		bottomMotor.config_kI(ShooterConstants.kPIDLoopIdx, bottomGains.getKI(), ShooterConstants.kTimeoutMs);
+    bottomMotor.config_kD(ShooterConstants.kPIDLoopIdx, bottomGains.getKD(), ShooterConstants.kTimeoutMs);
+    bottomMotor.config_kF(ShooterConstants.kPIDLoopIdx, bottomGains.getKF(), ShooterConstants.kTimeoutMs);
     
-    if(tunable) {
+    if(m_tunable) {
       SmartDashboard.putNumber("shooter top target rpm", topTargetRPM);
       SmartDashboard.putNumber("shooter bottom target rpm", bottomTargetRPM);
     }
@@ -133,29 +141,29 @@ public class ShooterSubsystem extends SubsystemBase {
     bottomTargetRPM = SmartDashboard.getNumber("shooter bottom target rpm", bottomTargetRPM);
 
     // if changed in SmartDashboard, configure the motor controllers
-    if(ShooterConstants.topGains.kPUpdated())
-      topMotor.config_kP(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKP(), ShooterConstants.kTimeoutMs);
+    if(topGains.kPUpdated())
+      topMotor.config_kP(ShooterConstants.kPIDLoopIdx, topGains.getKP(), ShooterConstants.kTimeoutMs);
 
-    if(ShooterConstants.topGains.kIUpdated())
-      topMotor.config_kI(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKI(), ShooterConstants.kTimeoutMs);
+    if(topGains.kIUpdated())
+      topMotor.config_kI(ShooterConstants.kPIDLoopIdx, topGains.getKI(), ShooterConstants.kTimeoutMs);
 
-    if(ShooterConstants.topGains.kDUpdated())
-      topMotor.config_kD(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKD(), ShooterConstants.kTimeoutMs);
+    if(topGains.kDUpdated())
+      topMotor.config_kD(ShooterConstants.kPIDLoopIdx, topGains.getKD(), ShooterConstants.kTimeoutMs);
 
-    if(ShooterConstants.topGains.kFUpdated())
-      topMotor.config_kF(ShooterConstants.kPIDLoopIdx, ShooterConstants.topGains.getKF(), ShooterConstants.kTimeoutMs);
+    if(topGains.kFUpdated())
+      topMotor.config_kF(ShooterConstants.kPIDLoopIdx, topGains.getKF(), ShooterConstants.kTimeoutMs);
       
-    if(ShooterConstants.bottomGains.kPUpdated())
-      bottomMotor.config_kP(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKP(), ShooterConstants.kTimeoutMs);
+    if(bottomGains.kPUpdated())
+      bottomMotor.config_kP(ShooterConstants.kPIDLoopIdx, bottomGains.getKP(), ShooterConstants.kTimeoutMs);
 
-    if(ShooterConstants.bottomGains.kIUpdated())
-      bottomMotor.config_kI(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKI(), ShooterConstants.kTimeoutMs);
+    if(bottomGains.kIUpdated())
+      bottomMotor.config_kI(ShooterConstants.kPIDLoopIdx, bottomGains.getKI(), ShooterConstants.kTimeoutMs);
 
-    if(ShooterConstants.bottomGains.kDUpdated())
-      bottomMotor.config_kD(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKD(), ShooterConstants.kTimeoutMs);
+    if(bottomGains.kDUpdated())
+      bottomMotor.config_kD(ShooterConstants.kPIDLoopIdx, bottomGains.getKD(), ShooterConstants.kTimeoutMs);
 
-    if(ShooterConstants.bottomGains.kFUpdated())
-      bottomMotor.config_kF(ShooterConstants.kPIDLoopIdx, ShooterConstants.bottomGains.getKF(), ShooterConstants.kTimeoutMs);
+    if(bottomGains.kFUpdated())
+      bottomMotor.config_kF(ShooterConstants.kPIDLoopIdx, bottomGains.getKF(), ShooterConstants.kTimeoutMs);
   }
  
   @Override

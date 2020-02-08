@@ -7,13 +7,13 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.WinchConstants;
 
 public class WinchSubsystem extends SubsystemBase {
 
-  Spark winchMotor = new Spark(WinchConstants.motorPort);
+  PWMSparkMax winchMotor = new PWMSparkMax(WinchConstants.motorPort);
   
   public WinchSubsystem() {
 

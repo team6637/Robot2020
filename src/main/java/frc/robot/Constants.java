@@ -7,10 +7,7 @@
 
 package frc.robot;
 
-import util.Gains;
-
 public final class Constants {
-
 
     /**
      * 
@@ -58,10 +55,10 @@ public final class Constants {
     public static final class ShelbowConstants {
 
         // CAN
-        public static final int masterID = 8;
-        public static final int slaveID = 9;
+        public static final int masterID = 9;
+        public static final int slaveID = 8;
 
-        public static final double speed = 0.5;
+        public static final int kTimeoutMs = 30;
     }
 
 
@@ -103,9 +100,6 @@ public final class Constants {
         public static final int kPIDLoopIdx = 0;
         public static final int kTimeoutMs = 30;
 
-        // kP, kI, kD, kF
-        public static final Gains topGains = new Gains(1.65, 0.0, 40.0, 0.6, true, "shooter top");
-        public static final Gains bottomGains = new Gains(1.65, 0.0, 40.0, 0.6, true, "shooter bottom");
     }
 
 

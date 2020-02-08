@@ -9,6 +9,7 @@ import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExtenderSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.LimelightSubsystem;
 import frc.robot.subsystems.ShelbowSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SpinnerSubsystem;
@@ -18,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
@@ -37,13 +39,14 @@ public class RobotContainer {
   private final ExtenderSubsystem extenderSubsystem = new ExtenderSubsystem();
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-  private final ShelbowSubsystem shelbowSubsystem = new ShelbowSubsystem();
-  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(true);
+  private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
+  private final ShelbowSubsystem shelbowSubsystem = new ShelbowSubsystem(true);
+  private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(true); 
   private final SpinnerSubsystem spinnerSubsystem = new SpinnerSubsystem();
   private final WinchSubsystem winchSubsystem = new WinchSubsystem();
 
   // pass the shelbow talon into the driveSubsystem's contstuctor to give to the gyro
-  private final DriveSubsystem driveSubsystem = new DriveSubsystem(shelbowSubsystem.getMasterReference());
+  private final DriveSubsystem driveSubsystem = new DriveSubsystem(shelbowSubsystem.getTalonWithPigeonReference());
 
   /**
    * 
@@ -57,7 +60,7 @@ public class RobotContainer {
   private final Command m_simpleAuto = new AutoCommand1();
 
   // sticks
-  private final Joystick driverStick = new Joystick(0);
+  public static Joystick driverStick = new Joystick(0);
   private final Joystick operatorStick = new Joystick(1);
 
 
@@ -71,19 +74,27 @@ public class RobotContainer {
     configureButtonBindings();
 
     driveSubsystem.setDefaultCommand(
-      new RunCommand(() -> driveSubsystem.arcadeDrive(-driverStick.getY(), driverStick.getTwist()), driveSubsystem)
+      new RunCommand(() -> driveSubsystem.arcadeDrive(getDriveToggle() * driverStick.getY(), driverStick.getTwist()), driveSubsystem)
     );
 
-    shelbowSubsystem.setDefaultCommand(
-      new RunCommand(() -> shelbowSubsystem.shelbowFlex(-operatorStick.getY()), shelbowSubsystem)
-    );
-
+    
     // Add commands to the autonomous command chooser
     m_chooser.addOption("Test Auto", m_simpleAuto);
 
     // Put the chooser on the dashboard
     Shuffleboard.getTab("Autonomous").add(m_chooser);
+
+    limelightSubsystem.setCameraMode(1);
   }
+
+  public int getDriveToggle() {
+    if(driverStick.getThrottle() > 0) {
+      return -1;
+    } else {
+      return 1;
+    } 
+  }
+
 
 
   /**
@@ -97,13 +108,15 @@ public class RobotContainer {
      * Intake 
      */
 
-    new JoystickButton(driverStick, 5).whenPressed(
+    new JoystickButton(driverStick, 8).whenPressed(
       new InstantCommand(intakeSubsystem::raise, intakeSubsystem)
     );
 
-    new JoystickButton(driverStick, 3).whenPressed(
+    new JoystickButton(driverStick, 10).whenPressed(
       new InstantCommand(intakeSubsystem::lower, intakeSubsystem)
     );
+
+    
 
 
 
@@ -112,9 +125,9 @@ public class RobotContainer {
      */
     
      // button pressed: raise arm, run intake, run indexer
-     new JoystickButton(driverStick, 2).whenPressed(
+     new JoystickButton(driverStick, 3).whenPressed(
       new ParallelCommandGroup(
-        // todo: raise shelbow
+        new InstantCommand(shelbowSubsystem::goToUpPosition, shelbowSubsystem),
         new InstantCommand(intakeSubsystem::acquire, intakeSubsystem),
         new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
       )
@@ -128,14 +141,14 @@ public class RobotContainer {
           () -> indexerSubsystem.backward(),
           () -> indexerSubsystem.stop(),
           indexerSubsystem
-        ).withTimeout(0.05)
+        ).withTimeout(0.1)
       )
     );
 
 
     
     /**
-     * Full Intake Routine 
+     * Full Shooter Routine 
      */
     
     // button pressed: start shooter velocity control
@@ -164,11 +177,12 @@ public class RobotContainer {
     ).whenReleased(
       new ParallelCommandGroup(
         new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
+        new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
         new StartEndCommand(
           () -> indexerSubsystem.backward(),
           () -> indexerSubsystem.stop(),
           indexerSubsystem
-        ).withTimeout(0.05)
+        ).withTimeout(0.1)
       )
     );
 
@@ -178,6 +192,31 @@ public class RobotContainer {
     /**
      * Shelbow 
      */ 
+    // hold trigger and move stick to manually control shelbow
+    new JoystickButton(operatorStick, 1).whenPressed(
+      new SequentialCommandGroup(
+        new InstantCommand(shelbowSubsystem::stopMotionMagic, shelbowSubsystem),
+        new RunCommand(() -> shelbowSubsystem.shelbowFlex(operatorStick.getY()), shelbowSubsystem)
+      )
+    ).whenReleased(
+      new SequentialCommandGroup(
+        new InstantCommand(shelbowSubsystem::stop, shelbowSubsystem),
+        new InstantCommand(shelbowSubsystem::startMotionMagic, shelbowSubsystem) 
+      )
+    );
+
+    new JoystickButton(driverStick, 7).whenPressed(
+      new InstantCommand(shelbowSubsystem::goToUpPosition, shelbowSubsystem)
+    );
+
+    new JoystickButton(driverStick, 11).whenPressed(
+      new InstantCommand(shelbowSubsystem::goToDownPosition, shelbowSubsystem)
+    );
+
+    new JoystickButton(driverStick, 9).whenPressed(
+      new InstantCommand(shelbowSubsystem::goToCenterPosition, shelbowSubsystem)
+    );
+
 
 
 
@@ -209,7 +248,7 @@ public class RobotContainer {
      */
   
     // Spin the control panel 
-    new JoystickButton(operatorStick, 11).whenPressed(
+    new JoystickButton(operatorStick, 8).whenPressed(
       new InstantCommand(spinnerSubsystem::spin, spinnerSubsystem)
     ).whenReleased(
       new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
@@ -220,31 +259,31 @@ public class RobotContainer {
       new CPSpinCommand(spinnerSubsystem)
     );
     
-    new JoystickButton(operatorStick, 10).whenPressed(
-      new InstantCommand(spinnerSubsystem::raise, spinnerSubsystem)
-    ).whenReleased(
-      new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
-    );
+    // new JoystickButton(operatorStick, 10).whenPressed(
+    //   new InstantCommand(spinnerSubsystem::raise, spinnerSubsystem)
+    // ).whenReleased(
+    //   new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
+    // );
 
-    new JoystickButton(operatorStick, 12).whenPressed(
-      new InstantCommand(spinnerSubsystem::lower, spinnerSubsystem)
-    ).whenReleased(
-      new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
-    );
+    // new JoystickButton(operatorStick, 12).whenPressed(
+    //   new InstantCommand(spinnerSubsystem::lower, spinnerSubsystem)
+    // ).whenReleased(
+    //   new InstantCommand(spinnerSubsystem::stop, spinnerSubsystem)
+    // );
 
     /**
      * Extender 
      */
 
     // extend to climb
-    new JoystickButton(driverStick, 9).whenPressed(
+    new JoystickButton(operatorStick, 5).whenPressed(
       new InstantCommand(extenderSubsystem::extend, extenderSubsystem)
     ).whenReleased(
       new InstantCommand(extenderSubsystem::stop, extenderSubsystem)
     );
 
     //retract
-    new JoystickButton(driverStick, 10).whenPressed(
+    new JoystickButton(operatorStick, 3).whenPressed(
       new InstantCommand(extenderSubsystem::retract, extenderSubsystem)
     ).whenReleased(
       new InstantCommand(extenderSubsystem::stop, extenderSubsystem)
@@ -256,11 +295,38 @@ public class RobotContainer {
      */
   
     // climb
-    new JoystickButton(operatorStick, 12).whenPressed(
+    new JoystickButton(operatorStick, 10).whenPressed(
       new InstantCommand(winchSubsystem::liftoff, winchSubsystem)
     ).whenReleased(
       new InstantCommand(winchSubsystem::hold, winchSubsystem)
     );
+
+
+  /**
+     * Auto Align 
+     */
+    new JoystickButton(driverStick, 2).whenPressed(
+        new InstantCommand(limelightSubsystem::setCameraMode0, limelightSubsystem).andThen(
+          new InstantCommand(() -> limelightSubsystem.setLedMode(3), limelightSubsystem)
+        )
+    ).whileHeld(
+        new ConditionalCommand(
+          //true
+          new InstantCommand(() -> shelbowSubsystem.setPositionFromDegrees(limelightSubsystem.getTy())),
+          //false
+          new InstantCommand(), 
+          //condition
+          limelightSubsystem::isTarget
+        )
+      
+    ).whenReleased(
+      new InstantCommand(limelightSubsystem::setCameraMode1, limelightSubsystem).andThen(
+        new InstantCommand(() -> limelightSubsystem.setLedMode(1), limelightSubsystem)
+      )
+    );
+   
+    
+
 
   }
 

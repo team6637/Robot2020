@@ -30,7 +30,8 @@ public class Gains {
 		m_kI = kI;
 		m_kD = kD;
 		m_kF = kF;
-		
+		m_name = name;
+
 		if(tunable) {
 	        SmartDashboard.putNumber(m_name + " kp", m_kP);
     	    SmartDashboard.putNumber(m_name + " ki", m_kI);
