@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.util.Gains;
+import frc.robot.util.Conversions;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -24,14 +25,18 @@ public class ShooterSubsystem extends SubsystemBase {
   WPI_TalonSRX bottomMotor = new WPI_TalonSRX(ShooterConstants.bottomMotorID);
 
   // set constants to local variables so we can tune with SmartDashboard
-  double topTargetRPM = 1000.0;
-  double bottomTargetRPM = 2900.0;
+  double initialTopRPM = 1000.0;
+  double topTargetRPM = initialTopRPM;
+  double initialBottomRPM = 2900.0;
+  double bottomTargetRPM = initialBottomRPM;
   double targetHeight = 99.0;
   double distance, angleAdjusted, h1, h2;
   double angleHeightMultiplier = 0.294;
 
   Gains topGains;
   Gains bottomGains;
+
+  Conversions conversions = new Conversions();
 
   public ShooterSubsystem(boolean tunable) {
     m_tunable = tunable;
@@ -96,39 +101,33 @@ public class ShooterSubsystem extends SubsystemBase {
   }
 
   // velocity control
-  public void setVelocity() {
+  public void setSweetSpotVelocity() {
 
     // update gains while tuning
     if(m_tunable)
       reconfigureLocalVariables();
 
-    topMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(topTargetRPM));
-    bottomMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(bottomTargetRPM));
+    topMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(initialTopRPM));
+    bottomMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(initialBottomRPM));
   }  
 
   // velocity control
-  public void setVelocityFromDistance(double angle) {
+  public void setVelocityFromAngle(double angle) {
 
     // update gains while tuning
     if(m_tunable)
       reconfigureLocalVariables();
 
+    distance = conversions.angleToDistance(angle);
 
-    // change in Angle / change in height of camera
-    h1 = 30 - ((41 - angle) * angleHeightMultiplier);
-    h2 = targetHeight - h1;
-    angleAdjusted = angle - 11.0;
+    topTargetRPM = conversions.getRangedValue1FromValue2(ShooterConstants.closestRangeTopRPM, ShooterConstants.farthestRangeTopRPM, ShooterConstants.closestRangeInches, ShooterConstants.farthestRangeInches, distance);
 
-    distance = h2 / Math.tan(Math.toRadians(angleAdjusted));
+    bottomTargetRPM = conversions.getRangedValue1FromValue2(ShooterConstants.closestRangeBottomRPM, ShooterConstants.farthestRangeBottomRPM, ShooterConstants.closestRangeInches, ShooterConstants.farthestRangeInches, distance);
 
-
-    // set y offset based on distance
-    // pass that to shelbow subsystem
-
-    // set top and bottom RPM based on distance
-
-
-
+    if(m_tunable) {
+      SmartDashboard.putNumber("shooter top target rpm", topTargetRPM);
+      SmartDashboard.putNumber("shooter bottom target rpm", bottomTargetRPM);
+    }
 
     topMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(topTargetRPM));
     bottomMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(bottomTargetRPM));

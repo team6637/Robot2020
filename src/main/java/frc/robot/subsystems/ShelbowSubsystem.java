@@ -115,7 +115,6 @@ public class ShelbowSubsystem extends SubsystemBase {
 
     if(m_tunable) {
       SmartDashboard.putNumber("shelbow target", targetPosition);
-      SmartDashboard.putNumber("shelbow closed loop error", this.motorMaster.getClosedLoopError());
       SmartDashboard.putNumber("shelbow velocity", maxVelocity);
       SmartDashboard.putNumber("shelbow acceleration", maxAcceleration);
     }
@@ -144,11 +143,6 @@ public class ShelbowSubsystem extends SubsystemBase {
 
   // SET TARGET POSITION
   public void setTargetPosition(int target) {
-    if(target > upPosition) {
-      target = upPosition;
-    } else if(target < downPosition) {
-      target = downPosition;
-    }
     targetPosition = target;
     if (m_tunable) SmartDashboard.putNumber("shelbow target", targetPosition);
   }
@@ -160,10 +154,8 @@ public class ShelbowSubsystem extends SubsystemBase {
     return positionError < onTargetThreshold;
   }
   
-  // GET ANGLE
   public double getAngle() {
-    final double angle = getPosition() / ticksPerDegree - angleOffset;
-    //final double angle = 0.0;
+    double angle = getPosition() / ticksPerDegree - angleOffset;
     return angle;
   }
 
@@ -183,10 +175,6 @@ public class ShelbowSubsystem extends SubsystemBase {
   public void stopMotionMagic() {
     m_motionMagicIsRunning = false;
   }
-
-  public void setPositionFromAngleOffset() {
-    getAngle();
-  }
   
   // SET MOTION MAGIC
   public void setMotionMagic() {
@@ -195,14 +183,19 @@ public class ShelbowSubsystem extends SubsystemBase {
     if(m_tunable)
       SmartDashboard.putNumber("Motion Control Starting", Math.random());
 
+    // check if targetPosition is in range
+    if(targetPosition > upPosition) {
+      targetPosition = upPosition;
+    } else if(targetPosition < downPosition) {
+      targetPosition = downPosition;
+    }
+
     // Do It!!!
 		motorMaster.set(ControlMode.MotionMagic, targetPosition);
     motorSlave.follow(motorMaster);
 
     // keep track so we know when targetPosition has changed (in periodic method)
-    lastExecutedPosition = targetPosition;
-
-    
+    lastExecutedPosition = targetPosition;    
   }
   
   @Override

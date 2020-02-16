@@ -64,6 +64,9 @@ public final class Constants {
         public static final int slaveID = 8;
 
         public static final int kTimeoutMs = 30;
+
+        public static final double yRangeBottom = 0;
+        public static final double yRangeTop = 9;
     }
 
 
@@ -99,6 +102,19 @@ public final class Constants {
         public static final double tolerance = 200.0;
         public static final int kPIDLoopIdx = 0;
         public static final int kTimeoutMs = 30;
+        public static final double targetHeight = 99.0;
+
+        // this was change in angle / change in height of cam from ground
+        public static final double angleHeightMultiplier = 0.294;
+
+        public static final double closestRangeInches = 120.0;
+        public static final double farthestRangeInches = 300.0;
+
+        public static final double closestRangeTopRPM = 1000;
+        public static final double farthestRangeTopRPM = 2000;
+        
+        public static final double closestRangeBottomRPM = 2900;
+        public static final double farthestRangeBottomRPM = 4400;
     }
 
 
