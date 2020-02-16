@@ -7,7 +7,9 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PWMSparkMax;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IndexerConstants;
 
@@ -15,16 +17,32 @@ public class IndexerSubsystem extends SubsystemBase {
 
   PWMSparkMax topMotor = new PWMSparkMax(IndexerConstants.topMotorPort);
   PWMSparkMax bottomMotor = new PWMSparkMax(IndexerConstants.bottomMotorPort);
+
+  DigitalInput ballSensor;
  
   public IndexerSubsystem() {
     topMotor.setInverted(true);
     bottomMotor.setInverted(true);
+
+    ballSensor = new DigitalInput(1);
 
   }
   
   public void forward() {
     topMotor.set(IndexerConstants.speed);
     bottomMotor.set(IndexerConstants.speed);
+  }
+
+  public boolean getBallSensor() {
+    return ballSensor.get();
+  }
+
+  public void forwardWithSensor() {
+    if(ballSensor.get()) {
+      forward();
+    } else {
+      stop();
+    }
   }
 
   public void backward() {
@@ -40,5 +58,8 @@ public class IndexerSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+
+    SmartDashboard.putBoolean("ball sensor", ballSensor.get());
+
   }
 }

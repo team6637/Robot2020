@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 
-
 public class DriveSubsystem extends SubsystemBase {
 
   private final WPI_TalonSRX leftMaster = new WPI_TalonSRX(DriveConstants.leftMasterID);
@@ -27,13 +26,16 @@ public class DriveSubsystem extends SubsystemBase {
 
   // gyro
   PigeonIMU gyro;
+  //public Gains turnGains;
 
-  public DriveSubsystem(WPI_TalonSRX shelbowMaster) {
+  boolean m_tunable = false;
+
+  public DriveSubsystem(boolean tunable) {
+    m_tunable = tunable;
 
     drive.setRightSideInverted(false);
 
-    // pass the shelbow talon into the gyro so the gyro knows which talon it's plugged into
-    gyro = new PigeonIMU(shelbowMaster);
+    gyro = new PigeonIMU(rightSlave);
 
     leftMaster.setNeutralMode(NeutralMode.Coast);
     leftSlave.setNeutralMode(NeutralMode.Coast);
@@ -51,13 +53,22 @@ public class DriveSubsystem extends SubsystemBase {
 
     //DIO ports
     leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
-    rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
-
+    rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
   }
 
   public void arcadeDrive(double move, double turn){
-    turn = turn * 0.6;
+    if(m_tunable)
+      SmartDashboard.putNumber("drive turn", turn);
+    turn = turn * 0.7;
     drive.arcadeDrive(move, turn);
+  }
+
+  public void autonDrive(double move, double turn){
+    drive.arcadeDrive(move, turn);
+  }
+
+  public void stop() {
+    drive.arcadeDrive(0, 0);
   }
 
   public double getLeftDistance(){
@@ -100,10 +111,25 @@ public class DriveSubsystem extends SubsystemBase {
     gyro.enterCalibrationMode(CalibrationMode.Temperature);
   }
 
+    /**
+   * Returns the heading of the robot.
+   *
+   * @return the robot's heading in degrees, from 180 to 180
+   */
+  public double getHeading() {
+    return Math.IEEEremainder(getAngle(), 360) * (DriveConstants.gyroReversed ? -1.0 : 1.0);
+  }
+
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("gyro", getAngle());
-    SmartDashboard.putNumber("left encoder", getLeftDistance());
-    SmartDashboard.putNumber("right encoder", getRightDistance());  
+    if(m_tunable) {
+      SmartDashboard.putNumber("gyro", getAngle());
+      SmartDashboard.putNumber("left encoder", getLeftDistance());
+      SmartDashboard.putNumber("right encoder", getRightDistance());
+
+      //turnGains.kPUpdated();
+      //turnGains.kIUpdated();
+      //turnGains.kDUpdated();      
+    }
   }
 }

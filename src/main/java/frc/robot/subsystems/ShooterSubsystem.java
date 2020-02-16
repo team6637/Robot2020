@@ -14,7 +14,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
-import util.Gains;
+import frc.robot.util.Gains;
 
 public class ShooterSubsystem extends SubsystemBase {
 
@@ -23,13 +23,12 @@ public class ShooterSubsystem extends SubsystemBase {
   WPI_TalonSRX topMotor = new WPI_TalonSRX(ShooterConstants.topMotorID);
   WPI_TalonSRX bottomMotor = new WPI_TalonSRX(ShooterConstants.bottomMotorID);
 
-  // keep track of the fastest speed each motor hits
-  double topMaxVelocity = 0;  
-  double bottomMaxVelocity = 0;
-
   // set constants to local variables so we can tune with SmartDashboard
-  double topTargetRPM = ShooterConstants.topTargetRPM;
-  double bottomTargetRPM = ShooterConstants.bottomTargetRPM;
+  double topTargetRPM = 1000.0;
+  double bottomTargetRPM = 2900.0;
+  double targetHeight = 99.0;
+  double distance, angleAdjusted, h1, h2;
+  double angleHeightMultiplier = 0.294;
 
   Gains topGains;
   Gains bottomGains;
@@ -81,6 +80,7 @@ public class ShooterSubsystem extends SubsystemBase {
     if(m_tunable) {
       SmartDashboard.putNumber("shooter top target rpm", topTargetRPM);
       SmartDashboard.putNumber("shooter bottom target rpm", bottomTargetRPM);
+      SmartDashboard.putNumber("shooter target height", targetHeight);
     }
   }
 
@@ -88,6 +88,11 @@ public class ShooterSubsystem extends SubsystemBase {
   public void shoot() {
     topMotor.set(ControlMode.PercentOutput, ShooterConstants.speed);
     bottomMotor.set(ControlMode.PercentOutput, ShooterConstants.speed);
+  }
+
+  public void backward(){
+    topMotor.set(ControlMode.PercentOutput, ShooterConstants.backSpeed);
+    bottomMotor.set(ControlMode.PercentOutput, ShooterConstants.backSpeed);
   }
 
   // velocity control
@@ -99,7 +104,35 @@ public class ShooterSubsystem extends SubsystemBase {
 
     topMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(topTargetRPM));
     bottomMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(bottomTargetRPM));
-  }
+  }  
+
+  // velocity control
+  public void setVelocityFromDistance(double angle) {
+
+    // update gains while tuning
+    if(m_tunable)
+      reconfigureLocalVariables();
+
+
+    // change in Angle / change in height of camera
+    h1 = 30 - ((41 - angle) * angleHeightMultiplier);
+    h2 = targetHeight - h1;
+    angleAdjusted = angle - 11.0;
+
+    distance = h2 / Math.tan(Math.toRadians(angleAdjusted));
+
+
+    // set y offset based on distance
+    // pass that to shelbow subsystem
+
+    // set top and bottom RPM based on distance
+
+
+
+
+    topMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(topTargetRPM));
+    bottomMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(bottomTargetRPM));
+  } 
 
   // stop the motors
   public void stop() {
@@ -124,6 +157,8 @@ public class ShooterSubsystem extends SubsystemBase {
   public double unitsPer100msToRPM(double unitsPer100ms) {
     return unitsPer100ms / ShooterConstants.unitsPerRotation * 600;
   }
+
+
 
   // check if motors are near setpoint
   public boolean atSetpoint() {
@@ -172,16 +207,11 @@ public class ShooterSubsystem extends SubsystemBase {
     if(m_tunable) {
       // get motor velocity. if higher than max, set max to this new high
       double topVelocity = unitsPer100msToRPM(getTopVelocity());
-      if(topVelocity > topMaxVelocity) topMaxVelocity = topVelocity;
-
       double bottomVelocity = unitsPer100msToRPM(getBottomVelocity());
-      if(bottomVelocity > bottomMaxVelocity) bottomMaxVelocity = bottomVelocity;
 
       // put values into SmartDashboard
       SmartDashboard.putNumber("shooter top speed", topVelocity);
-      SmartDashboard.putNumber("shooter top max", topMaxVelocity);
       SmartDashboard.putNumber("shooter bottom speed", bottomVelocity);
-      SmartDashboard.putNumber("shooter bottom max", bottomMaxVelocity); 
     } 
   }
 }

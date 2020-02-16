@@ -5,7 +5,7 @@
 /* the project.                                                               */
 /*----------------------------------------------------------------------------*/
 
-package util;
+package frc.robot.util;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -19,10 +19,17 @@ public class Gains {
 	public double m_kPeakOutput;
 	public String m_name;
 	
-	public Gains(double kP, double kI, double kD){
+	public Gains(double kP, double kI, double kD, boolean tunable, String name){
 		m_kP = kP;
 		m_kI = kI;
 		m_kD = kD;
+		m_name = name;
+
+		if(tunable) {
+	        SmartDashboard.putNumber(m_name + " kp", m_kP);
+    	    SmartDashboard.putNumber(m_name + " ki", m_kI);
+        	SmartDashboard.putNumber(m_name + " kd", m_kD);
+		}
 	}
 
 	public Gains(double kP, double kI, double kD, double kF, boolean tunable, String name){

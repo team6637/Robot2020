@@ -5,6 +5,8 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.commands.AutoCommand1;
 import frc.robot.commands.CPSpinCommand;
+import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.AutoAim;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExtenderSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -20,7 +22,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 /**
@@ -39,15 +40,14 @@ public class RobotContainer {
   private final ExtenderSubsystem extenderSubsystem = new ExtenderSubsystem();
   private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
-  private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem();
+  private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem(true);
   private final ShelbowSubsystem shelbowSubsystem = new ShelbowSubsystem(true);
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(true); 
   private final SpinnerSubsystem spinnerSubsystem = new SpinnerSubsystem();
   private final WinchSubsystem winchSubsystem = new WinchSubsystem();
 
   // pass the shelbow talon into the driveSubsystem's contstuctor to give to the gyro
-  private final DriveSubsystem driveSubsystem = new DriveSubsystem(shelbowSubsystem.getTalonWithPigeonReference());
-
+  private final DriveSubsystem driveSubsystem = new DriveSubsystem(true);
   /**
    * 
    * Commands n Stuff
@@ -84,7 +84,7 @@ public class RobotContainer {
     // Put the chooser on the dashboard
     Shuffleboard.getTab("Autonomous").add(m_chooser);
 
-    limelightSubsystem.setCameraMode(1);
+    limelightSubsystem.setupDriveMode();
   }
 
   public int getDriveToggle() {
@@ -105,55 +105,32 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     /**
-     * Intake 
+     * Intake Routine 
      */
-
-    new JoystickButton(driverStick, 8).whenPressed(
-      new InstantCommand(intakeSubsystem::raise, intakeSubsystem)
-    );
-
-    new JoystickButton(driverStick, 10).whenPressed(
-      new InstantCommand(intakeSubsystem::lower, intakeSubsystem)
-    );
-
     
-
-
+    // button pressed: raise arm, run intake, run indexer
+    new JoystickButton(driverStick, 2).whenHeld(
+      new IntakeCommand(intakeSubsystem, indexerSubsystem, shelbowSubsystem, shooterSubsystem)
+    );
 
     /**
-     * Full Intake Routine 
+     * Intake Reverse 
      */
     
      // button pressed: raise arm, run intake, run indexer
-     new JoystickButton(driverStick, 3).whenPressed(
-      new ParallelCommandGroup(
-        new InstantCommand(shelbowSubsystem::goToUpPosition, shelbowSubsystem),
-        new InstantCommand(intakeSubsystem::acquire, intakeSubsystem),
-        new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
-      )
+    //  new JoystickButton(driverStick, 5).whenPressed(
+    // );
     
-    // button released: stop shooter, stop intake, back balls up a scootch in indexer, then stop it
-    ).whenReleased(
-      new ParallelCommandGroup(
-        new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
-        new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
-        new StartEndCommand(
-          () -> indexerSubsystem.backward(),
-          () -> indexerSubsystem.stop(),
-          indexerSubsystem
-        ).withTimeout(0.1)
-      )
-    );
+    
 
 
-    
     /**
-     * Full Shooter Routine 
+     * Shooter Routine 
      */
     
     // button pressed: start shooter velocity control
     new JoystickButton(driverStick, 1).whenPressed(
-      new InstantCommand(shooterSubsystem::setVelocity, shooterSubsystem)
+      new InstantCommand(() -> shooterSubsystem.setVelocityFromDistance(shelbowSubsystem.getAngle()), shooterSubsystem)
 
     // while button pressed: if shooter is at velocity, run indexer and intake forward
     // if not, stop indexer and intake
@@ -178,20 +155,26 @@ public class RobotContainer {
       new ParallelCommandGroup(
         new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
         new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
-        new StartEndCommand(
-          () -> indexerSubsystem.backward(),
-          () -> indexerSubsystem.stop(),
-          indexerSubsystem
-        ).withTimeout(0.1)
+        new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
       )
     );
 
 
+    /**
+     * Auto Align 
+     */
+    new JoystickButton(driverStick, 3).whenHeld(
+      new AutoAim(limelightSubsystem, driveSubsystem, shelbowSubsystem) 
+    );
 
+
+    
     
     /**
      * Shelbow 
-     */ 
+     */
+
+    // Manual Override
     // hold trigger and move stick to manually control shelbow
     new JoystickButton(operatorStick, 1).whenPressed(
       new SequentialCommandGroup(
@@ -199,12 +182,11 @@ public class RobotContainer {
         new RunCommand(() -> shelbowSubsystem.shelbowFlex(operatorStick.getY()), shelbowSubsystem)
       )
     ).whenReleased(
-      new SequentialCommandGroup(
-        new InstantCommand(shelbowSubsystem::stop, shelbowSubsystem),
-        new InstantCommand(shelbowSubsystem::startMotionMagic, shelbowSubsystem) 
-      )
+      new InstantCommand(shelbowSubsystem::startMotionMagic, shelbowSubsystem) 
     );
 
+    
+    // SHELBOW SETPOINTS
     new JoystickButton(driverStick, 7).whenPressed(
       new InstantCommand(shelbowSubsystem::goToUpPosition, shelbowSubsystem)
     );
@@ -229,16 +211,28 @@ public class RobotContainer {
      */
     // forward
     new JoystickButton(driverStick, 6).whenPressed(
-      new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
+        new InstantCommand(shooterSubsystem::backward, shooterSubsystem)
+      )
     ).whenReleased(
-      new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::stop, indexerSubsystem),
+        new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
+      )
     );
 
     // reverse, reverse! 
     new JoystickButton(driverStick, 4).whenPressed(
-      new InstantCommand(indexerSubsystem::backward, indexerSubsystem)
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::backward, indexerSubsystem),
+        new InstantCommand(intakeSubsystem::backward, intakeSubsystem)
+      )
     ).whenReleased(
-      new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::stop, indexerSubsystem),
+        new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
+      )
     );
 
     
@@ -300,35 +294,25 @@ public class RobotContainer {
     ).whenReleased(
       new InstantCommand(winchSubsystem::hold, winchSubsystem)
     );
-
-
-  /**
-     * Auto Align 
-     */
-    new JoystickButton(driverStick, 2).whenPressed(
-        new InstantCommand(limelightSubsystem::setCameraMode0, limelightSubsystem).andThen(
-          new InstantCommand(() -> limelightSubsystem.setLedMode(3), limelightSubsystem)
-        )
-    ).whileHeld(
-        new ConditionalCommand(
-          //true
-          new InstantCommand(() -> shelbowSubsystem.setPositionFromDegrees(limelightSubsystem.getTy())),
-          //false
-          new InstantCommand(), 
-          //condition
-          limelightSubsystem::isTarget
-        )
-      
-    ).whenReleased(
-      new InstantCommand(limelightSubsystem::setCameraMode1, limelightSubsystem).andThen(
-        new InstantCommand(() -> limelightSubsystem.setLedMode(1), limelightSubsystem)
-      )
-    );
-   
     
 
-
+    
+    new JoystickButton(operatorStick, 2).whileHeld(
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
+        new InstantCommand(intakeSubsystem::acquire, intakeSubsystem),
+        new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
+      )
+    ).whenReleased(
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::stop, indexerSubsystem),
+        new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
+        new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
+      )
+    );
   }
+
+    
 
 
   /**

@@ -15,7 +15,7 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShelbowConstants;
-import util.Gains;
+import frc.robot.util.Gains;
 
 public class ShelbowSubsystem extends SubsystemBase {
 
@@ -32,7 +32,7 @@ public class ShelbowSubsystem extends SubsystemBase {
   // setup predefined setpoints
   private final int downPosition = 852;
   public int centerPosition = 1056;
-  public int upPosition = 1260;
+  public int upPosition = 1235;
 
   private boolean m_motionMagicIsRunning = false;
 
@@ -41,7 +41,7 @@ public class ShelbowSubsystem extends SubsystemBase {
   private int lastExecutedPosition;
 
   private final int onTargetThreshold = 50;
-  private int maxVelocity = 60;
+  private int maxVelocity = 30;
   private int maxAcceleration = 50;
 
   public void goToUpPosition() {
@@ -61,7 +61,7 @@ public class ShelbowSubsystem extends SubsystemBase {
     m_tunable = tunable;
 
     // kP, kI, kD, kF
-    gains = new Gains(1.7, 0, 0, 0, m_tunable, "shelbow gains");
+    gains = new Gains(2.3, 0.002, 0, 0, m_tunable, "shelbow gains");
 
     motorMaster.configFactoryDefault();
     motorSlave.configFactoryDefault();
@@ -88,12 +88,12 @@ public class ShelbowSubsystem extends SubsystemBase {
     motorSlave.configPeakOutputReverse(-1.0, ShelbowConstants.kTimeoutMs);
 
     // nominal output - minimum output needed to move the system
-    motorMaster.configNominalOutputForward(0.0, ShelbowConstants.kTimeoutMs);
+    motorMaster.configNominalOutputForward(0.06, ShelbowConstants.kTimeoutMs);
     motorMaster.configNominalOutputReverse(0.0, ShelbowConstants.kTimeoutMs);
-    motorSlave.configNominalOutputForward(0.0, ShelbowConstants.kTimeoutMs);
+    motorSlave.configNominalOutputForward(0.06, ShelbowConstants.kTimeoutMs);
     motorSlave.configNominalOutputReverse(0.0, ShelbowConstants.kTimeoutMs);
     		
-    // setup a PIDF slot for going up
+    // config pidf
     motorMaster.selectProfileSlot(0, 0);
 		motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.kTimeoutMs);
 		motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.kTimeoutMs);
@@ -201,6 +201,8 @@ public class ShelbowSubsystem extends SubsystemBase {
 
     // keep track so we know when targetPosition has changed (in periodic method)
     lastExecutedPosition = targetPosition;
+
+    
   }
   
   @Override
@@ -261,11 +263,7 @@ public class ShelbowSubsystem extends SubsystemBase {
   
   
   
-  // made a public getter so we can pass this object outside of this subsystem
-  // since the pigeon gyro is plugged into this, we have to pass this object into the gyro, which lives in the drive subsystem
-  public WPI_TalonSRX getTalonWithPigeonReference() {
-    return motorSlave;
-  }
+  
 
   final boolean kDiscontinuityPresent = false;
   public void initQuadrature() {

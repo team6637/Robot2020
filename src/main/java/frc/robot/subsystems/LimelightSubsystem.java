@@ -4,25 +4,27 @@ package frc.robot.subsystems;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LimelightSubsystem extends SubsystemBase {
-  /**
-   * Creates a new LimelightSubsystem.
-   */
+	/**
+	 * Creates a new LimelightSubsystem.
+	 */
 
-  NetworkTable table;
-  
-  public LimelightSubsystem() {
-    table = NetworkTableInstance.getDefault().getTable("limelight");
+	NetworkTable table;
+	Boolean m_tunable;
 
-    setPipeline(0);
-    setCameraMode(1);
-  }
+	public LimelightSubsystem(Boolean tunable) {
+	table = NetworkTableInstance.getDefault().getTable("limelight");
+	m_tunable = tunable;
+	setPipeline(0);
+	setupDriveMode();
+	}
 
-  
 
-  public boolean isTarget() {
+
+	public boolean isTarget() {
 		return getValue("tv").getDouble(0.0) == 1;
 	}
 
@@ -70,8 +72,18 @@ public class LimelightSubsystem extends SubsystemBase {
 	 */
 	public void setLedMode(int ledMode) {
 		getValue("ledMode").setNumber(ledMode);
-  }
+  	}
   
+	public void setupAutoAim() {
+		setLedMode(3);
+		setCameraMode(0);
+	  }
+	  
+	public void setupDriveMode() {
+		setLedMode(1);
+		setCameraMode(1);
+	}
+
 
 	/**
 	 * Sets camera mode for Limelight.
@@ -107,6 +119,10 @@ public class LimelightSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+	// This method will be called once per scheduler run
+	if(m_tunable) {
+		SmartDashboard.putNumber("limelight y", getTy());
+		SmartDashboard.putNumber("limelight x", getTx());
+	}
   }
 }
