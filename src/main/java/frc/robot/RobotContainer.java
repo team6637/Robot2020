@@ -38,7 +38,7 @@ public class RobotContainer {
    * 
    */
   private final ExtenderSubsystem extenderSubsystem = new ExtenderSubsystem();
-  private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem();
+  private final IndexerSubsystem indexerSubsystem = new IndexerSubsystem(true);
   private final IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
   private final LimelightSubsystem limelightSubsystem = new LimelightSubsystem(true);
   private final ShelbowSubsystem shelbowSubsystem = new ShelbowSubsystem(true);
@@ -96,7 +96,6 @@ public class RobotContainer {
   }
 
 
-
   /**
    * 
    * Button Mapping
@@ -143,21 +142,6 @@ public class RobotContainer {
       )
     );
 
-    // Low Goal Shoot Out Balls
-    new JoystickButton(operatorStick, 2).whileHeld(
-      new ParallelCommandGroup(
-        new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
-        new InstantCommand(intakeSubsystem::acquire, intakeSubsystem),
-        new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
-      )
-    ).whenReleased(
-      new ParallelCommandGroup(
-        new InstantCommand(indexerSubsystem::stop, indexerSubsystem),
-        new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
-        new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
-      )
-    );
-
 
     /**
      * Shooter Routine 
@@ -195,6 +179,21 @@ public class RobotContainer {
     );
 
 
+    // Low Goal Shoot Out Balls
+    new JoystickButton(operatorStick, 2).whileHeld(
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
+        new InstantCommand(intakeSubsystem::acquire, intakeSubsystem),
+        new InstantCommand(shooterSubsystem::shoot, shooterSubsystem)
+      )
+    ).whenReleased(
+      new ParallelCommandGroup(
+        new InstantCommand(indexerSubsystem::stop, indexerSubsystem),
+        new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
+        new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
+      )
+    );
+
     /**
      * Auto Align 
      */
@@ -209,7 +208,7 @@ public class RobotContainer {
      * Shelbow 
      */
 
-    // SETPOINTS
+    // MOTION MAGIC SETPOINTS
     new JoystickButton(driverStick, 7).whenPressed(
       new InstantCommand(shelbowSubsystem::goToUpPosition, shelbowSubsystem)
     );
@@ -222,7 +221,7 @@ public class RobotContainer {
       new InstantCommand(shelbowSubsystem::goToCenterPosition, shelbowSubsystem)
     );
 
-    // Manual Override
+    // MANUAL OVERIDE
     // hold trigger and move stick to manually control shelbow
     new JoystickButton(operatorStick, 1).whenPressed(
       new SequentialCommandGroup(

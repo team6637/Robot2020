@@ -13,7 +13,7 @@ import frc.robot.Constants.IntakeConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  PWMSparkMax intakeMotor = new PWMSparkMax(IntakeConstants.motorPort);
+  private final PWMSparkMax intakeMotor = new PWMSparkMax(IntakeConstants.motorPort);
  
   public IntakeSubsystem() {
     intakeMotor.setInverted(false);
@@ -27,13 +27,11 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeMotor.set(-IntakeConstants.speed);
   }
 
-
   public void stop() {
     intakeMotor.set(0.0);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
   }
 }

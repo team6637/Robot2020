@@ -19,25 +19,20 @@ import frc.robot.util.Conversions;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-  boolean m_tunable = false;
   
-  WPI_TalonSRX topMotor = new WPI_TalonSRX(ShooterConstants.topMotorID);
-  WPI_TalonSRX bottomMotor = new WPI_TalonSRX(ShooterConstants.bottomMotorID);
+  private final WPI_TalonSRX topMotor = new WPI_TalonSRX(ShooterConstants.topMotorID);
+  private final WPI_TalonSRX bottomMotor = new WPI_TalonSRX(ShooterConstants.bottomMotorID);
+  
+  private final boolean m_tunable;
+ 
+  private final Gains topGains;
+  private final Gains bottomGains;
+  private final Conversions conversions = new Conversions();
 
-  // set constants to local variables so we can tune with SmartDashboard
-  double initialTopRPM = 1000.0;
-  double topTargetRPM = initialTopRPM;
-  double initialBottomRPM = 2900.0;
-  double bottomTargetRPM = initialBottomRPM;
-  double targetHeight = 99.0;
-  double distance, angleAdjusted, h1, h2;
-  double angleHeightMultiplier = 0.294;
-
-  Gains topGains;
-  Gains bottomGains;
-
-  Conversions conversions = new Conversions();
-
+  double topTargetRPM = ShooterConstants.closestRangeTopRPM;
+  double bottomTargetRPM = ShooterConstants.closestRangeBottomRPM;
+  double distance;
+  
   public ShooterSubsystem(boolean tunable) {
     m_tunable = tunable;
 
@@ -85,7 +80,6 @@ public class ShooterSubsystem extends SubsystemBase {
     if(m_tunable) {
       SmartDashboard.putNumber("shooter top target rpm", topTargetRPM);
       SmartDashboard.putNumber("shooter bottom target rpm", bottomTargetRPM);
-      SmartDashboard.putNumber("shooter target height", targetHeight);
     }
   }
 
@@ -107,8 +101,8 @@ public class ShooterSubsystem extends SubsystemBase {
     if(m_tunable)
       reconfigureLocalVariables();
 
-    topMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(initialTopRPM));
-    bottomMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(initialBottomRPM));
+    topMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(ShooterConstants.closestRangeTopRPM));
+    bottomMotor.set(ControlMode.Velocity, rpmToUnitsPer100ms(ShooterConstants.closestRangeBottomRPM));
   }  
 
   // velocity control
@@ -119,10 +113,26 @@ public class ShooterSubsystem extends SubsystemBase {
       reconfigureLocalVariables();
 
     distance = conversions.angleToDistance(angle);
-
+    
+    // set top RPM
     topTargetRPM = conversions.getRangedValue1FromValue2(ShooterConstants.closestRangeTopRPM, ShooterConstants.farthestRangeTopRPM, ShooterConstants.closestRangeInches, ShooterConstants.farthestRangeInches, distance);
 
+    // constrain top RPM to within limit range
+    if(topTargetRPM < ShooterConstants.RPMLowLimit)
+      topTargetRPM = ShooterConstants.RPMLowLimit;
+
+    if(topTargetRPM > ShooterConstants.RPMHighLimit)
+      topTargetRPM = ShooterConstants.RPMHighLimit;
+
+    // set bottom RPM
     bottomTargetRPM = conversions.getRangedValue1FromValue2(ShooterConstants.closestRangeBottomRPM, ShooterConstants.farthestRangeBottomRPM, ShooterConstants.closestRangeInches, ShooterConstants.farthestRangeInches, distance);
+
+    // constrain bottom RPM to within limit range
+    if(bottomTargetRPM < ShooterConstants.RPMLowLimit)
+      bottomTargetRPM = ShooterConstants.RPMLowLimit;
+
+    if(bottomTargetRPM > ShooterConstants.RPMHighLimit)
+      bottomTargetRPM = ShooterConstants.RPMHighLimit;
 
     if(m_tunable) {
       SmartDashboard.putNumber("shooter top target rpm", topTargetRPM);

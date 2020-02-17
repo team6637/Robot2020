@@ -12,17 +12,16 @@ public class LimelightSubsystem extends SubsystemBase {
 	 * Creates a new LimelightSubsystem.
 	 */
 
-	NetworkTable table;
-	Boolean m_tunable;
+	private final NetworkTable table;
+	private final boolean m_tunable;
 
-	public LimelightSubsystem(Boolean tunable) {
-	table = NetworkTableInstance.getDefault().getTable("limelight");
-	m_tunable = tunable;
-	setPipeline(0);
-	setupDriveMode();
+	public LimelightSubsystem(boolean tunable) {
+		m_tunable = tunable;
+
+		table = NetworkTableInstance.getDefault().getTable("limelight");
+		setPipeline(0);
+		setupDriveMode();
 	}
-
-
 
 	public boolean isTarget() {
 		return getValue("tv").getDouble(0.0) == 1;
@@ -68,23 +67,12 @@ public class LimelightSubsystem extends SubsystemBase {
 	 * Sets LED mode of Limelight.
 	 * 
 	 * @param mode
-	 *            Light mode for Limelight.
+	 * Light mode for Limelight.
 	 */
 	public void setLedMode(int ledMode) {
 		getValue("ledMode").setNumber(ledMode);
-  	}
+  }
   
-	public void setupAutoAim() {
-		setLedMode(3);
-		setCameraMode(0);
-	  }
-	  
-	public void setupDriveMode() {
-		setLedMode(1);
-		setCameraMode(1);
-	}
-
-
 	/**
 	 * Sets camera mode for Limelight.
 	 * 
@@ -101,7 +89,17 @@ public class LimelightSubsystem extends SubsystemBase {
 
   public void setCameraMode1() {
     setCameraMode(1);
-  }
+	}
+	
+	public void setupAutoAim() {
+		setLedMode(3);
+		setCameraMode(0);
+	  }
+	  
+	public void setupDriveMode() {
+		setLedMode(1);
+		setCameraMode(1);
+	}
 
 	/**
 	 * Sets pipeline number (0-9 value).
@@ -119,10 +117,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-	// This method will be called once per scheduler run
-	if(m_tunable) {
-		SmartDashboard.putNumber("limelight y", getTy());
-		SmartDashboard.putNumber("limelight x", getTx());
-	}
+		if(m_tunable) {
+			SmartDashboard.putNumber("limelight y", getTy());
+			SmartDashboard.putNumber("limelight x", getTx());
+		}
   }
 }

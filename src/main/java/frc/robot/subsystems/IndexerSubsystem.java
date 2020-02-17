@@ -15,28 +15,27 @@ import frc.robot.Constants.IndexerConstants;
 
 public class IndexerSubsystem extends SubsystemBase {
 
-  PWMSparkMax topMotor = new PWMSparkMax(IndexerConstants.topMotorPort);
-  PWMSparkMax bottomMotor = new PWMSparkMax(IndexerConstants.bottomMotorPort);
+  private final PWMSparkMax topMotor = new PWMSparkMax(IndexerConstants.topMotorPort);
+  private final PWMSparkMax bottomMotor = new PWMSparkMax(IndexerConstants.bottomMotorPort);
 
-  DigitalInput ballSensor;
+  private final DigitalInput ballSensor;
+
+  private final boolean m_tunable;
  
-  public IndexerSubsystem() {
+  public IndexerSubsystem(boolean tunable) {
+    m_tunable = tunable;
+
     topMotor.setInverted(true);
     bottomMotor.setInverted(true);
 
     ballSensor = new DigitalInput(1);
-
   }
   
   public void forward() {
     topMotor.set(IndexerConstants.speed);
     bottomMotor.set(IndexerConstants.speed);
   }
-
-  public boolean getBallSensor() {
-    return ballSensor.get();
-  }
-
+  
   public void forwardWithSensor() {
     if(ballSensor.get()) {
       forward();
@@ -44,22 +43,24 @@ public class IndexerSubsystem extends SubsystemBase {
       stop();
     }
   }
-
+  
   public void backward() {
     topMotor.set(-IndexerConstants.speed);
     bottomMotor.set(-IndexerConstants.speed);
   }
-
+  
   public void stop() {
     topMotor.set(0.0);
     bottomMotor.set(0.0);
   }
 
+  public boolean getBallSensor() {
+    return ballSensor.get();
+  }
+
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
-
-    SmartDashboard.putBoolean("ball sensor", ballSensor.get());
-
+    if(m_tunable)
+      SmartDashboard.putBoolean("ball sensor bottom", ballSensor.get());
   }
 }

@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ShelbowConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.DriveSubsystem;
@@ -23,11 +24,11 @@ public class AutoAim extends CommandBase {
   private final DriveSubsystem m_drive;
   private final LimelightSubsystem m_limelight;
   private final ShelbowSubsystem m_shelbow;
-  Gains gains;
+  
+  Gains turnGains;
   PID pid;
   Conversions conversions;
-  double yOffset = 0;
-  double turnPower, error, distance;
+  double turnPower, error, distance, yOffset;
 
   public AutoAim(LimelightSubsystem limelight, DriveSubsystem drive, ShelbowSubsystem shelbow) {
     addRequirements(drive, limelight, shelbow);
@@ -35,8 +36,8 @@ public class AutoAim extends CommandBase {
     m_shelbow = shelbow;
     m_drive = drive;
 
-    gains = new Gains(0.085, 0.003, 0.5, true, "turn gains");
-    pid = new PID(gains, 0.0);
+    turnGains = new Gains(DriveConstants.turnKp, DriveConstants.turnKi, DriveConstants.turnKd, true, "turn gains");
+    pid = new PID(turnGains, 0);
     conversions = new Conversions();
   }
 
@@ -50,9 +51,9 @@ public class AutoAim extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    gains.kPUpdated();
-    gains.kIUpdated();
-    gains.kDUpdated();
+    turnGains.kPUpdated();
+    turnGains.kIUpdated();
+    turnGains.kDUpdated();
 
     if(m_limelight.isTarget()) {
       
@@ -71,10 +72,13 @@ public class AutoAim extends CommandBase {
       m_drive.autonDrive(0, -turnPower);
 
       // ADJUST SHELBOW
-      distance = conversions.angleToDistance(m_shelbow.getAngle());
+      distance = conversions.angleToDistance(m_shelbow.getAngleWithoutYOffset());
 
+      // calculate yOffset from current distance
       yOffset = conversions.getRangedValue1FromValue2(ShelbowConstants.yRangeBottom, ShelbowConstants.yRangeTop, ShooterConstants.closestRangeInches, ShooterConstants.farthestRangeInches, distance);
 
+      // keep track of yOffset in shelbow so we can get angle without it
+      m_shelbow.setYOffset(yOffset);
       SmartDashboard.putNumber("shelbow y offset", yOffset);
 
       m_shelbow.setPositionFromDegrees(m_limelight.getTy() + yOffset);

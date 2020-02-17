@@ -38,7 +38,7 @@ public class IntakeCommand extends CommandBase {
   @Override
   public void initialize() {      
     
-    m_shooter.rollBackward();
+    m_shooter.backward();
     m_shelbow.goToUpPosition();
     m_intake.acquire();
 
@@ -51,7 +51,7 @@ public class IntakeCommand extends CommandBase {
     // if ball is in the intake
     if(m_indexer.getBallSensor()) {
       m_indexer.forward();
-      m_shooter.rollBackward();
+      m_shooter.backward();
 
       // reset counter
       counter = 0;
@@ -62,7 +62,7 @@ public class IntakeCommand extends CommandBase {
       // for the first x counts, run the ball in
       if(counter < 5) {
         m_indexer.forward();
-        m_shooter.rollBackward();
+        m_shooter.backward();
       } else {
         m_indexer.stop();
         m_shooter.stop();

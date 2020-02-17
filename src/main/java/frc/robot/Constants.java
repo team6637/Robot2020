@@ -9,6 +9,16 @@ package frc.robot;
 
 public final class Constants {
 
+    // 30AMP CURRENT LIMITS
+    public static final int current30AmpPeakCurrentLimit = 25;
+    public static final int current30AmpPeakCurrentDuration = 200;
+    public static final int current30AmpContinuousCurrentLimit = 25;
+
+    // 40AMP CURRENT LIMITS
+    public static final int current40AmpPeakCurrentLimit = 35;
+    public static final int current40AmpPeakCurrentDuration = 200;
+    public static final int current40AmpContinuousCurrentLimit = 35;
+
     /**
      * 
      * Drive Constants
@@ -35,6 +45,14 @@ public final class Constants {
 
         public static final double turnToleranceDeg = 5.0;
         public static final double turnRateToleranceDegPerS = 10.0;
+
+        public static final double moveKp = 0.0;
+        public static final double moveKi = 0.0;
+        public static final double moveKd = 0.0;
+
+        public static final double turnKp = 0.085;
+        public static final double turnKi = 0.003;
+        public static final double turnKd = 0.5;
     }
 
 
@@ -63,10 +81,19 @@ public final class Constants {
         public static final int masterID = 9;
         public static final int slaveID = 8;
 
-        public static final int kTimeoutMs = 30;
+        public static final int ticksPerDegrees = 11;
+        public static final int absoluteEncoderAngleOffset = 62;  
+        public static final int timeoutMs = 30;
 
         public static final double yRangeBottom = 0;
         public static final double yRangeTop = 9;
+
+        public static final int downPosition = 852;
+        public static final int centerPosition = 1056;
+        public static final int upPosition = 1235;
+
+        public static final int onTargetThreshold = 50;
+
     }
 
 
@@ -115,6 +142,9 @@ public final class Constants {
         
         public static final double closestRangeBottomRPM = 2900;
         public static final double farthestRangeBottomRPM = 4400;
+
+        public static final double RPMLowLimit = 700;
+        public static final double RPMHighLimit = 4800;
     }
 
 

@@ -13,7 +13,6 @@ import frc.robot.Constants.ExtenderConstants;
 
 public class ExtenderSubsystem extends SubsystemBase {
   
-  //Spark extenderMotor = new Spark(ExtenderConstants.motorPort);
   Spark extenderMotor = new Spark(ExtenderConstants.motorPort);
 
   public ExtenderSubsystem() {
@@ -34,6 +33,5 @@ public class ExtenderSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
   }
 }

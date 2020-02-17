@@ -14,49 +14,26 @@ import com.ctre.phoenix.motorcontrol.StatusFrame;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.ShelbowConstants;
 import frc.robot.util.Gains;
 
 public class ShelbowSubsystem extends SubsystemBase {
-
-  private int angleOffset = 62;
-  private int ticksPerDegree = 11;
+  
+  private WPI_TalonSRX motorMaster = new WPI_TalonSRX(ShelbowConstants.masterID);
+  private WPI_TalonSRX motorSlave = new WPI_TalonSRX(ShelbowConstants.slaveID);
 
   private final boolean m_tunable;
-  
-  WPI_TalonSRX motorMaster = new WPI_TalonSRX(ShelbowConstants.masterID);
-  WPI_TalonSRX motorSlave = new WPI_TalonSRX(ShelbowConstants.slaveID);
 
-  Gains gains;
-
-  // setup predefined setpoints
-  private final int downPosition = 852;
-  public int centerPosition = 1056;
-  public int upPosition = 1235;
-
+  private double yOffset = 0;
+  private Gains gains;
   private boolean m_motionMagicIsRunning = false;
-
-  // starting position
-  private int targetPosition = upPosition;
+  private int targetPosition = ShelbowConstants.upPosition;
   private int lastExecutedPosition;
-
-  private final int onTargetThreshold = 50;
   private int maxVelocity = 30;
   private int maxAcceleration = 50;
 
-  public void goToUpPosition() {
-    setTargetPosition(upPosition);
-  }
-
-  public void goToDownPosition() {
-    setTargetPosition(downPosition);
-  }
-
-  public void goToCenterPosition() {
-    setTargetPosition(centerPosition);
-  }
-
-  public ShelbowSubsystem(final boolean tunable) {
+  public ShelbowSubsystem(boolean tunable) {
 
     m_tunable = tunable;
 
@@ -76,42 +53,37 @@ public class ShelbowSubsystem extends SubsystemBase {
     motorMaster.setSensorPhase(false);
     initQuadrature();
 
-    motorSlave.follow(motorMaster);
-
-    motorMaster.setStatusFramePeriod(StatusFrame.Status_13_Base_PIDF0, 10, ShelbowConstants.kTimeoutMs);
-    motorMaster.setStatusFramePeriod(StatusFrame.Status_10_MotionMagic, 10, ShelbowConstants.kTimeoutMs);
+    motorMaster.setStatusFramePeriod(StatusFrame.Status_13_Base_PIDF0, 10, ShelbowConstants.timeoutMs);
+    motorMaster.setStatusFramePeriod(StatusFrame.Status_10_MotionMagic, 10, ShelbowConstants.timeoutMs);
 
     // peak output
-		motorMaster.configPeakOutputForward(+1.0, ShelbowConstants.kTimeoutMs);
-    motorMaster.configPeakOutputReverse(-1.0, ShelbowConstants.kTimeoutMs);
-    motorSlave.configPeakOutputForward(+1.0, ShelbowConstants.kTimeoutMs);
-    motorSlave.configPeakOutputReverse(-1.0, ShelbowConstants.kTimeoutMs);
+		motorMaster.configPeakOutputForward(+1.0, ShelbowConstants.timeoutMs);
+    motorMaster.configPeakOutputReverse(-1.0, ShelbowConstants.timeoutMs);
+    motorSlave.configPeakOutputForward(+1.0, ShelbowConstants.timeoutMs);
+    motorSlave.configPeakOutputReverse(-1.0, ShelbowConstants.timeoutMs);
 
     // nominal output - minimum output needed to move the system
-    motorMaster.configNominalOutputForward(0.06, ShelbowConstants.kTimeoutMs);
-    motorMaster.configNominalOutputReverse(0.0, ShelbowConstants.kTimeoutMs);
-    motorSlave.configNominalOutputForward(0.06, ShelbowConstants.kTimeoutMs);
-    motorSlave.configNominalOutputReverse(0.0, ShelbowConstants.kTimeoutMs);
+    motorMaster.configNominalOutputForward(0.06, ShelbowConstants.timeoutMs);
+    motorMaster.configNominalOutputReverse(0.0, ShelbowConstants.timeoutMs);
+    motorSlave.configNominalOutputForward(0.06, ShelbowConstants.timeoutMs);
+    motorSlave.configNominalOutputReverse(0.0, ShelbowConstants.timeoutMs);
     		
     // config pidf
     motorMaster.selectProfileSlot(0, 0);
-		motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.kTimeoutMs);
-		motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.kTimeoutMs);
-		motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.kTimeoutMs);
-		motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.kTimeoutMs);
+		motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.timeoutMs);
+		motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.timeoutMs);
+		motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.timeoutMs);
+		motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.timeoutMs);
 
 		// set speeds
-		motorMaster.configMotionAcceleration(maxAcceleration, ShelbowConstants.kTimeoutMs);
-		motorMaster.configMotionCruiseVelocity(maxVelocity, ShelbowConstants.kTimeoutMs);
+		motorMaster.configMotionAcceleration(maxAcceleration, ShelbowConstants.timeoutMs);
+		motorMaster.configMotionCruiseVelocity(maxVelocity, ShelbowConstants.timeoutMs);
 
     // Current Limiting
-    // motorMaster.configPeakCurrentLimit(ShelbowConstants.current30AmpPeakCurrentLimit, ShelbowConstants.kTimeoutMs);
-		// motorMaster.configPeakCurrentDuration(ShelbowConstants.current30AmpPeakCurrentDuration, ShelbowConstants.kTimeoutMs);
-		// motorMaster.configContinuousCurrentLimit(ShelbowConstants.current30AmpContinuousCurrentLimit, ShelbowConstants.kTimeoutMs);
-		// motorMaster.enableCurrentLimit(true);
-    
-    // set target to starting position
-    setTargetPosition(upPosition);
+    motorMaster.configPeakCurrentLimit(Constants.current40AmpPeakCurrentLimit, ShelbowConstants.timeoutMs);
+		motorMaster.configPeakCurrentDuration(Constants.current40AmpPeakCurrentDuration, ShelbowConstants.timeoutMs);
+		motorMaster.configContinuousCurrentLimit(Constants.current40AmpContinuousCurrentLimit, ShelbowConstants.timeoutMs);
+		motorMaster.enableCurrentLimit(true);
 
     if(m_tunable) {
       SmartDashboard.putNumber("shelbow target", targetPosition);
@@ -119,11 +91,15 @@ public class ShelbowSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("shelbow acceleration", maxAcceleration);
     }
 
-    // run Motion Magic for the first time
     startMotionMagic();
   }
 
-  // MANUAL DRIVE
+
+
+  /* 
+   * MANUAL DRIVE
+  */
+
   public void shelbowFlex(final double move){  
     motorMaster.set(ControlMode.PercentOutput, move);
     motorSlave.follow(motorMaster);
@@ -133,30 +109,21 @@ public class ShelbowSubsystem extends SubsystemBase {
   public void stop() {
     motorMaster.set(ControlMode.PercentOutput, 0);
     motorSlave.follow(motorMaster);
-  }  
+  }
 
-   // ENCODER
+
+
+  /* 
+   * POSITION
+  */
   public int getPosition() {
     final int pos = motorMaster.getSensorCollection().getQuadraturePosition();
     return pos;    
   }
 
-  // SET TARGET POSITION
   public void setTargetPosition(int target) {
     targetPosition = target;
     if (m_tunable) SmartDashboard.putNumber("shelbow target", targetPosition);
-  }
-
-  // MOTION MAGIC IS CLOSE ENOUGH
-  public boolean atSetpoint() {
-    final int currentPosition = getPosition();
-    final int positionError = Math.abs(targetPosition - currentPosition);
-    return positionError < onTargetThreshold;
-  }
-  
-  public double getAngle() {
-    double angle = getPosition() / ticksPerDegree - angleOffset;
-    return angle;
   }
 
   public void setPositionFromDegrees(double degrees){
@@ -165,9 +132,49 @@ public class ShelbowSubsystem extends SubsystemBase {
   }
 
   public int getTicksFromDegrees(double degrees){
-    return (int) (degrees * ticksPerDegree);
+    return (int) (degrees * ShelbowConstants.ticksPerDegrees);
+  }
+  
+  public void goToCenterPosition() {
+    setTargetPosition(ShelbowConstants.centerPosition);
   }
 
+  public void goToUpPosition() {
+    setTargetPosition(ShelbowConstants.upPosition);
+  }
+
+  public void goToDownPosition() {
+    setTargetPosition(ShelbowConstants.downPosition);
+  }
+
+
+  /* 
+   * ANGLE
+  */
+  public double getAngle() {
+    return getPosition() / ShelbowConstants.ticksPerDegrees - ShelbowConstants.absoluteEncoderAngleOffset;
+  }
+
+  public double getAngleWithoutYOffset() {
+    return getAngle() - yOffset;
+  }
+
+  public void setYOffset(double val) {
+    yOffset = val;
+  }
+
+  public double getYOffset() {
+    return yOffset;
+  }
+
+
+
+/*   
+ * MOTION MAGIC
+ */  
+
+  // keep track of MM with these
+  // in the periodic loop, it uses this to refresh MM if values have changed
   public void startMotionMagic() {
     m_motionMagicIsRunning = true;
   }
@@ -176,18 +183,17 @@ public class ShelbowSubsystem extends SubsystemBase {
     m_motionMagicIsRunning = false;
   }
   
-  // SET MOTION MAGIC
+  // call this to set MM based on current targetPosition
   public void setMotionMagic() {
-    
     // print a random number to visually show when MM restarts
     if(m_tunable)
       SmartDashboard.putNumber("Motion Control Starting", Math.random());
 
     // check if targetPosition is in range
-    if(targetPosition > upPosition) {
-      targetPosition = upPosition;
-    } else if(targetPosition < downPosition) {
-      targetPosition = downPosition;
+    if(targetPosition > ShelbowConstants.upPosition) {
+      targetPosition = ShelbowConstants.upPosition;
+    } else if(targetPosition < ShelbowConstants.downPosition) {
+      targetPosition = ShelbowConstants.downPosition;
     }
 
     // Do It!!!
@@ -197,7 +203,18 @@ public class ShelbowSubsystem extends SubsystemBase {
     // keep track so we know when targetPosition has changed (in periodic method)
     lastExecutedPosition = targetPosition;    
   }
-  
+
+  public boolean atSetpoint() {
+    final int currentPosition = getPosition();
+    final int positionError = Math.abs(targetPosition - currentPosition);
+    return positionError < ShelbowConstants.onTargetThreshold;
+  }
+
+
+    
+  /* 
+  * Loop
+  */
   @Override
   public void periodic() {
     boolean changed = false;
@@ -219,26 +236,26 @@ public class ShelbowSubsystem extends SubsystemBase {
       final int sdVel = (int) SmartDashboard.getNumber("shelbow velocity", maxVelocity);
       if(sdVel != maxVelocity) {
         maxVelocity = sdVel;
-        motorMaster.configMotionCruiseVelocity(maxVelocity, ShelbowConstants.kTimeoutMs);
+        motorMaster.configMotionCruiseVelocity(maxVelocity, ShelbowConstants.timeoutMs);
       }
 
       final int sdAccel = (int) SmartDashboard.getNumber("shelbow acceleration", maxAcceleration);
       if(sdAccel != maxAcceleration) {
         this.maxAcceleration = sdAccel;
-        motorMaster.configMotionAcceleration(maxAcceleration, ShelbowConstants.kTimeoutMs);
+        motorMaster.configMotionAcceleration(maxAcceleration, ShelbowConstants.timeoutMs);
       }
 
       if(gains.kPUpdated())
-        motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.kTimeoutMs);
+        motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.timeoutMs);
 
       if(gains.kIUpdated())
-        motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.kTimeoutMs);
+        motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.timeoutMs);
 
       if(gains.kDUpdated())
-        motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.kTimeoutMs);
+        motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.timeoutMs);
 
       if(gains.kFUpdated())
-        motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.kTimeoutMs);
+        motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.timeoutMs);
       
       final int sdTargetPosition = (int) SmartDashboard.getNumber("shelbow target", targetPosition);
       if(sdTargetPosition != targetPosition)
@@ -249,15 +266,14 @@ public class ShelbowSubsystem extends SubsystemBase {
     // set motion magic
     if(changed && m_motionMagicIsRunning)
       setMotionMagic();
-
   }
 
   
   
   
-  
-  
-
+  /* 
+  * Set Quad encoder to the Absolute Pulse Width value 
+  */
   final boolean kDiscontinuityPresent = false;
   public void initQuadrature() {
 		// get the absolute pulse width position
@@ -265,20 +281,16 @@ public class ShelbowSubsystem extends SubsystemBase {
     
 		// If there is a discontinuity in our measured range, subtract one half rotation to remove it
 		if (kDiscontinuityPresent) {
-
-		// Calculate the center
-			//int newCenter;
-			//newCenter = (upPosition + downPosition) / 2;
-			//newCenter &= 0xFFF;
-
-		// Apply the offset so the discontinuity is in the unused portion of the sensor
-			//pulseWidth -= newCenter;
+      int newCenter;
+			newCenter = (ShelbowConstants.upPosition + ShelbowConstants.downPosition) / 2;
+			newCenter &= 0xFFF;
+			pulseWidth -= newCenter;
 		}
 
-		// Mask out the bottom 12 bits to normalize to [0,4095], or in other words, to stay within [0,360) degrees 
+		// Mask out the bottom 12 bits to normalize to [0,4095] to stay within [0,360) degrees 
 		pulseWidth = pulseWidth & 0xFFF;
 
 		// Update Quadrature position
-		motorMaster.getSensorCollection().setQuadraturePosition(pulseWidth, ShelbowConstants.kTimeoutMs);
+		motorMaster.getSensorCollection().setQuadraturePosition(pulseWidth, ShelbowConstants.timeoutMs);
 	}
 }
