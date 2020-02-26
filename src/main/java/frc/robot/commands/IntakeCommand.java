@@ -51,7 +51,9 @@ public class IntakeCommand extends CommandBase {
     // if ball is in the intake
     if(m_indexer.getBallSensor()) {
       m_indexer.forward();
-      m_shooter.backward();
+
+      if(m_indexer.getBallSensorTop())
+        m_shooter.backward();
 
       // reset counter
       counter = 0;
@@ -60,9 +62,11 @@ public class IntakeCommand extends CommandBase {
     } else {
       
       // for the first x counts, run the ball in
-      if(counter < 5) {
+      if(counter < 1) {
         m_indexer.forward();
-        m_shooter.backward();
+        
+        if(m_indexer.getBallSensorTop())
+          m_shooter.backward();
       } else {
         m_indexer.stop();
         m_shooter.stop();

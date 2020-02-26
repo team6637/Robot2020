@@ -29,7 +29,7 @@ public class ShelbowSubsystem extends SubsystemBase {
   private Gains gains;
   private boolean m_motionMagicIsRunning = false;
   private int targetPosition = ShelbowConstants.upPosition;
-  private int lastExecutedPosition;
+  private int lastExecutedPosition = 0;
   private int maxVelocity = 30;
   private int maxAcceleration = 50;
 
@@ -38,7 +38,7 @@ public class ShelbowSubsystem extends SubsystemBase {
     m_tunable = tunable;
 
     // kP, kI, kD, kF
-    gains = new Gains(2.3, 0.002, 0, 0, m_tunable, "shelbow gains");
+    gains = new Gains(2.3, 0.002, 0.03, 0, m_tunable, "shelbow gains");
 
     motorMaster.configFactoryDefault();
     motorSlave.configFactoryDefault();
@@ -87,8 +87,6 @@ public class ShelbowSubsystem extends SubsystemBase {
 
     if(m_tunable) {
       SmartDashboard.putNumber("shelbow target", targetPosition);
-      SmartDashboard.putNumber("shelbow velocity", maxVelocity);
-      SmartDashboard.putNumber("shelbow acceleration", maxAcceleration);
     }
 
     startMotionMagic();
@@ -100,10 +98,11 @@ public class ShelbowSubsystem extends SubsystemBase {
    * MANUAL DRIVE
   */
 
-  public void shelbowFlex(final double move){  
+  public void shelbowFlex(double move){  
     motorMaster.set(ControlMode.PercentOutput, move);
     motorSlave.follow(motorMaster);
-    setTargetPosition(getPosition());
+    setYOffset(0);
+    // setTargetPosition(getPosition());
   }
 
   public void stop() {
@@ -117,7 +116,7 @@ public class ShelbowSubsystem extends SubsystemBase {
    * POSITION
   */
   public int getPosition() {
-    final int pos = motorMaster.getSensorCollection().getQuadraturePosition();
+    int pos = motorMaster.getSensorCollection().getQuadraturePosition();
     return pos;    
   }
 
@@ -126,7 +125,7 @@ public class ShelbowSubsystem extends SubsystemBase {
     if (m_tunable) SmartDashboard.putNumber("shelbow target", targetPosition);
   }
 
-  public void setPositionFromDegrees(double degrees){
+  public void setPositionFromDegreeOffset(double degrees){
     int ticksToMove = getTicksFromDegrees(degrees);
     setTargetPosition(ticksToMove + getPosition());
   }
@@ -136,14 +135,17 @@ public class ShelbowSubsystem extends SubsystemBase {
   }
   
   public void goToCenterPosition() {
+    setYOffset(0);
     setTargetPosition(ShelbowConstants.centerPosition);
   }
 
   public void goToUpPosition() {
+    setYOffset(0);
     setTargetPosition(ShelbowConstants.upPosition);
   }
 
   public void goToDownPosition() {
+    setYOffset(0);
     setTargetPosition(ShelbowConstants.downPosition);
   }
 
@@ -183,7 +185,7 @@ public class ShelbowSubsystem extends SubsystemBase {
     m_motionMagicIsRunning = false;
   }
   
-  // call this to set MM based on current targetPosition
+  // set MM based on targetPosition
   public void setMotionMagic() {
     // print a random number to visually show when MM restarts
     if(m_tunable)
@@ -205,8 +207,8 @@ public class ShelbowSubsystem extends SubsystemBase {
   }
 
   public boolean atSetpoint() {
-    final int currentPosition = getPosition();
-    final int positionError = Math.abs(targetPosition - currentPosition);
+    int currentPosition = getPosition();
+    int positionError = Math.abs(targetPosition - currentPosition);
     return positionError < ShelbowConstants.onTargetThreshold;
   }
 
@@ -230,20 +232,21 @@ public class ShelbowSubsystem extends SubsystemBase {
     if(m_tunable) {
       SmartDashboard.putNumber("shelbow position", getPosition());
       SmartDashboard.putNumber("shelbow angle", getAngle());
+      SmartDashboard.putNumber("shelbow yOffset", yOffset);
 
       // if the following values change in Smart Dashboard, update them locally
       // motion magic will then use the values the next time targetPosition changes
-      final int sdVel = (int) SmartDashboard.getNumber("shelbow velocity", maxVelocity);
-      if(sdVel != maxVelocity) {
-        maxVelocity = sdVel;
-        motorMaster.configMotionCruiseVelocity(maxVelocity, ShelbowConstants.timeoutMs);
-      }
+      // int sdVel = (int) SmartDashboard.getNumber("shelbow velocity", maxVelocity);
+      // if(sdVel != maxVelocity) {
+      //   maxVelocity = sdVel;
+      //   motorMaster.configMotionCruiseVelocity(maxVelocity, ShelbowConstants.timeoutMs);
+      // }
 
-      final int sdAccel = (int) SmartDashboard.getNumber("shelbow acceleration", maxAcceleration);
-      if(sdAccel != maxAcceleration) {
-        this.maxAcceleration = sdAccel;
-        motorMaster.configMotionAcceleration(maxAcceleration, ShelbowConstants.timeoutMs);
-      }
+      // int sdAccel = (int) SmartDashboard.getNumber("shelbow acceleration", maxAcceleration);
+      // if(sdAccel != maxAcceleration) {
+      //   this.maxAcceleration = sdAccel;
+      //   motorMaster.configMotionAcceleration(maxAcceleration, ShelbowConstants.timeoutMs);
+      // }
 
       if(gains.kPUpdated())
         motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.timeoutMs);
@@ -257,7 +260,7 @@ public class ShelbowSubsystem extends SubsystemBase {
       if(gains.kFUpdated())
         motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.timeoutMs);
       
-      final int sdTargetPosition = (int) SmartDashboard.getNumber("shelbow target", targetPosition);
+      int sdTargetPosition = (int) SmartDashboard.getNumber("shelbow target", targetPosition);
       if(sdTargetPosition != targetPosition)
         setTargetPosition(sdTargetPosition);
 

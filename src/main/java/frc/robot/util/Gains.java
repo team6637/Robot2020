@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Gains {
     
-    public double m_kP, m_kI, m_kD, m_kF;
+  public double m_kP, m_kI, m_kD, m_kF;
 	public int m_kIZone;
 	public double m_kPeakOutput;
 	public String m_name;

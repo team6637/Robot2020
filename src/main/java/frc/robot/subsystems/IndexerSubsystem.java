@@ -19,6 +19,10 @@ public class IndexerSubsystem extends SubsystemBase {
   private final PWMSparkMax bottomMotor = new PWMSparkMax(IndexerConstants.bottomMotorPort);
 
   private final DigitalInput ballSensor;
+  private final DigitalInput ballSensorTop;
+
+  private int ballsShot = 0;
+  private boolean ballTopIsSensed = false;
 
   private final boolean m_tunable;
  
@@ -29,6 +33,7 @@ public class IndexerSubsystem extends SubsystemBase {
     bottomMotor.setInverted(true);
 
     ballSensor = new DigitalInput(1);
+    ballSensorTop = new DigitalInput(2);
   }
   
   public void forward() {
@@ -49,18 +54,44 @@ public class IndexerSubsystem extends SubsystemBase {
     bottomMotor.set(-IndexerConstants.speed);
   }
   
+  public void backwardSlow() {
+    topMotor.set(-IndexerConstants.speedSlow);
+    bottomMotor.set(-IndexerConstants.speedSlow);
+  }
   public void stop() {
     topMotor.set(0.0);
     bottomMotor.set(0.0);
   }
 
   public boolean getBallSensor() {
-    return ballSensor.get();
+    return ballSensor.get() ? false : true;
+  }
+
+  public boolean getBallSensorTop() {
+    return ballSensorTop.get() ? false : true;
+  }
+
+  public void resetBallsShot() {
+    ballsShot = 0;
   }
 
   @Override
   public void periodic() {
     if(m_tunable)
-      SmartDashboard.putBoolean("ball sensor bottom", ballSensor.get());
+      SmartDashboard.putBoolean("ball sensor bottom", getBallSensor());
+      SmartDashboard.putBoolean("ball sensor top", getBallSensorTop());
+      
+
+    // check if sensor sees ball
+    if(getBallSensor()) {
+      if(!ballTopIsSensed) {
+        ballTopIsSensed = true;
+        ballsShot++;
+      }
+    } else {
+      ballTopIsSensed = false;
+    }
   }
+
+  
 }

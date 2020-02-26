@@ -7,6 +7,13 @@
 
 package frc.robot;
 
+import com.revrobotics.ColorMatch;
+
+import edu.wpi.first.wpilibj.I2C;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj.util.Units;
+
+
 public final class Constants {
 
     // 30AMP CURRENT LIMITS
@@ -18,6 +25,13 @@ public final class Constants {
     public static final int current40AmpPeakCurrentLimit = 35;
     public static final int current40AmpPeakCurrentDuration = 200;
     public static final int current40AmpContinuousCurrentLimit = 35;
+
+    public static Color[] WHEEL_COLORS = new Color[4]; // Yellow, Red, Green, Blue
+    public static String[][] WHEEL_POSITIONS = {
+        {"c", "r", "r", "l"}, // Yellow; Order of strings goes to Target: Y, R, G, B
+        {"l", "c", "r", "r"}, // Red
+        {"r", "l", "c", "r"}, // Green
+        {"r", "r", "l", "c"}}; // Blue
 
     /**
      * 
@@ -33,12 +47,12 @@ public final class Constants {
         public static final int rightSlaveID = 4;
 
         // DIO
-        public static final int leftEncoderPortA = 9;
-        public static final int leftEncoderPortB = 8;
+        public static final int leftEncoderPortA = 5;
+        public static final int leftEncoderPortB = 4;
         public static final int rightEncoderPortA = 7;
         public static final int rightEncoderPortB = 6;
 
-        public static final double wheelDiameter = 0.2032;
+        public static final double wheelDiameter = Units.inchesToMeters(8);
         public static final int pulsePerRevolution = 360;
 
         public static final boolean gyroReversed = false;
@@ -86,11 +100,13 @@ public final class Constants {
         public static final int timeoutMs = 30;
 
         public static final double yRangeBottom = 0;
-        public static final double yRangeTop = 9;
+        public static final double yRangeTop = 6;
 
-        public static final int downPosition = 852;
-        public static final int centerPosition = 1056;
-        public static final int upPosition = 1235;
+        public static final int downPosition = 842;
+        public static final int centerPosition = 1048;
+        public static final int upPosition = 1209;
+
+        public static final int autonPositionFrontCenter = 1100;
 
         public static final int onTargetThreshold = 50;
 
@@ -109,6 +125,7 @@ public final class Constants {
         public static final int bottomMotorPort = 5;
 
         public static final double speed = 1.0;
+        public static final double speedSlow = 0.4;
     }
     
     
@@ -124,9 +141,9 @@ public final class Constants {
         public static final int bottomMotorID = 7;
 
         public static final double speed = 0.5;
-        public static final double backSpeed = -0.4;
+        public static final double backSpeed = -0.55;
         public static final double unitsPerRotation = 4096.0;
-        public static final double tolerance = 200.0;
+        public static final double tolerance = 75.0;
         public static final int kPIDLoopIdx = 0;
         public static final int kTimeoutMs = 30;
         public static final double targetHeight = 99.0;
@@ -135,16 +152,16 @@ public final class Constants {
         public static final double angleHeightMultiplier = 0.294;
 
         public static final double closestRangeInches = 120.0;
-        public static final double farthestRangeInches = 300.0;
+        public static final double farthestRangeInches = 240.0;
 
-        public static final double closestRangeTopRPM = 1000;
-        public static final double farthestRangeTopRPM = 2000;
+        public static final double closestRangeTopRPM = 2000;
+        public static final double farthestRangeTopRPM = 3000;
         
-        public static final double closestRangeBottomRPM = 2900;
+        public static final double closestRangeBottomRPM = 3700;
         public static final double farthestRangeBottomRPM = 4400;
 
-        public static final double RPMLowLimit = 700;
-        public static final double RPMHighLimit = 4800;
+        public static final double RPMLowLimit = 2000;
+        public static final double RPMHighLimit = 5500;
     }
 
 
@@ -158,7 +175,8 @@ public final class Constants {
         // PWM
         public static final int motorPort = 8;
 
-        public static final double speed = 0.7;
+        public static final double speed = 0.65;
+        public static final double downSpeed = -0.4;
     }
 
 
@@ -172,7 +190,7 @@ public final class Constants {
         // PWM
         public static final int motorPort = 9;
 
-        public static final double speed = -0.9;
+        public static final double speed = 1.0;
     }
 
 
@@ -187,6 +205,15 @@ public final class Constants {
         public static final int motorID = 5;
 
         public static final double speed = 0.6;
+
+        //I2C
+        public final static I2C.Port i2cPort = I2C.Port.kOnboard;
+
+        public final static Color blueTarget = ColorMatch.makeColor(0.143, 0.427, 0.429);
+        public final static Color greenTarget = ColorMatch.makeColor(0.197, 0.561, 0.240);
+        public final static Color redTarget = ColorMatch.makeColor(0.561, 0.232, 0.114);
+        public final static Color yellowTarget = ColorMatch.makeColor(0.361, 0.524, 0.113);
+        
 
         //mathing
         public static final int unitsPerRotation = 4096;

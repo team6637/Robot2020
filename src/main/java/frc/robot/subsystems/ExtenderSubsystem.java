@@ -28,7 +28,7 @@ public class ExtenderSubsystem extends SubsystemBase {
   }
 
   public void retract(){
-    extenderMotor.set(-ExtenderConstants.speed);
+    extenderMotor.set(ExtenderConstants.downSpeed);
   }
 
   @Override

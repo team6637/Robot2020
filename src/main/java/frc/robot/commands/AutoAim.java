@@ -9,6 +9,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ShelbowConstants;
 import frc.robot.Constants.ShooterConstants;
@@ -36,6 +37,7 @@ public class AutoAim extends CommandBase {
     m_shelbow = shelbow;
     m_drive = drive;
 
+    //turnGains = new Gains(DriveConstants.turnKp, DriveConstants.turnKi, DriveConstants.turnKd, true, "turn gains");
     turnGains = new Gains(DriveConstants.turnKp, DriveConstants.turnKi, DriveConstants.turnKd, true, "turn gains");
     pid = new PID(turnGains, 0);
     conversions = new Conversions();
@@ -74,14 +76,23 @@ public class AutoAim extends CommandBase {
       // ADJUST SHELBOW
       distance = conversions.angleToDistance(m_shelbow.getAngleWithoutYOffset());
 
+      SmartDashboard.putNumber("distance from target", distance);
+
       // calculate yOffset from current distance
       yOffset = conversions.getRangedValue1FromValue2(ShelbowConstants.yRangeBottom, ShelbowConstants.yRangeTop, ShooterConstants.closestRangeInches, ShooterConstants.farthestRangeInches, distance);
 
+      if(yOffset > Constants.ShelbowConstants.yRangeTop) 
+        yOffset = Constants.ShelbowConstants.yRangeTop;
+        
+      if(yOffset < 0) yOffset = 0;
+
+      // disable y offset calculations
+      //yOffset = 0;
+
       // keep track of yOffset in shelbow so we can get angle without it
       m_shelbow.setYOffset(yOffset);
-      SmartDashboard.putNumber("shelbow y offset", yOffset);
 
-      m_shelbow.setPositionFromDegrees(m_limelight.getTy() + yOffset);
+      m_shelbow.setPositionFromDegreeOffset(m_limelight.getTy() + yOffset);
 
     } else {
       m_drive.stop();

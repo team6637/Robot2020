@@ -6,7 +6,11 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.CalibrationMode;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 
@@ -18,6 +22,9 @@ public class DriveSubsystem extends SubsystemBase {
   private final WPI_TalonSRX rightSlave = new WPI_TalonSRX(DriveConstants.rightSlaveID);
 
   private final DifferentialDrive drive = new DifferentialDrive(leftMaster, rightMaster);
+
+  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
+  //private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(kinematics, );
 
   private final Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
   
@@ -44,17 +51,24 @@ public class DriveSubsystem extends SubsystemBase {
     rightSlave.follow(rightMaster);
 
     drive.setRightSideInverted(false);
-    
+
+    leftEncoder.setReverseDirection(true);
+    rightEncoder.setReverseDirection(false);
+
     leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
-    
+
     rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
 
     gyro = new PigeonIMU(rightSlave);
     calibrateGyro();
   }
 
+  //public Rotation2d getHeading() {
+   // return Rotation2d.fromDegrees(gyro.getAngle());
+ // }
+
   public void arcadeDrive(double move, double turn){
-    turn = turn * 0.8;
+    turn = turn * 0.7;
     drive.arcadeDrive(move, turn, true);
   }
 

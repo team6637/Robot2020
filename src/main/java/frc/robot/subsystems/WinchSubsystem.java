@@ -22,7 +22,7 @@ public class WinchSubsystem extends SubsystemBase {
   public void liftoff() {
     winchMotor.set(WinchConstants.speed);
   }
-  public void hold() {
+  public void stop() {
     winchMotor.set(0);
   }
 
