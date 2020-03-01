@@ -28,17 +28,20 @@ public class ShelbowSubsystem extends SubsystemBase {
   private double yOffset = 0;
   private Gains gains;
   private boolean m_motionMagicIsRunning = false;
-  private int targetPosition = ShelbowConstants.upPosition;
+  private int targetPosition;
   private int lastExecutedPosition = 0;
   private int maxVelocity = 30;
   private int maxAcceleration = 50;
+
+  private boolean newMotionMagic = false;
+  private int motionMagicCounter = 0;
 
   public ShelbowSubsystem(boolean tunable) {
 
     m_tunable = tunable;
 
     // kP, kI, kD, kF
-    gains = new Gains(2.3, 0.002, 0.03, 0, m_tunable, "shelbow gains");
+    gains = new Gains(3, 0.0006, 3.0, 0, true, "shelbow gains");
 
     motorMaster.configFactoryDefault();
     motorSlave.configFactoryDefault();
@@ -83,12 +86,10 @@ public class ShelbowSubsystem extends SubsystemBase {
     motorMaster.configPeakCurrentLimit(Constants.current40AmpPeakCurrentLimit, ShelbowConstants.timeoutMs);
 		motorMaster.configPeakCurrentDuration(Constants.current40AmpPeakCurrentDuration, ShelbowConstants.timeoutMs);
 		motorMaster.configContinuousCurrentLimit(Constants.current40AmpContinuousCurrentLimit, ShelbowConstants.timeoutMs);
-		motorMaster.enableCurrentLimit(true);
+    motorMaster.enableCurrentLimit(true);
 
-    if(m_tunable) {
-      SmartDashboard.putNumber("shelbow target", targetPosition);
-    }
-
+    // setup and run Motion Magic
+    setTargetPosition(ShelbowConstants.upPosition);
     startMotionMagic();
   }
 
@@ -102,7 +103,6 @@ public class ShelbowSubsystem extends SubsystemBase {
     motorMaster.set(ControlMode.PercentOutput, move);
     motorSlave.follow(motorMaster);
     setYOffset(0);
-    // setTargetPosition(getPosition());
   }
 
   public void stop() {
@@ -134,6 +134,11 @@ public class ShelbowSubsystem extends SubsystemBase {
     return (int) (degrees * ShelbowConstants.ticksPerDegrees);
   }
   
+  public void goToDownPosition() {
+    setYOffset(0);
+    setTargetPosition(ShelbowConstants.downPosition);
+  }
+  
   public void goToCenterPosition() {
     setYOffset(0);
     setTargetPosition(ShelbowConstants.centerPosition);
@@ -144,9 +149,10 @@ public class ShelbowSubsystem extends SubsystemBase {
     setTargetPosition(ShelbowConstants.upPosition);
   }
 
-  public void goToDownPosition() {
+  // used during winch action
+  public void goToNearlyUpPosition() {
     setYOffset(0);
-    setTargetPosition(ShelbowConstants.downPosition);
+    setTargetPosition(ShelbowConstants.upPosition - 10);
   }
 
 
@@ -191,11 +197,16 @@ public class ShelbowSubsystem extends SubsystemBase {
     if(m_tunable)
       SmartDashboard.putNumber("Motion Control Starting", Math.random());
 
+     if(!newMotionMagic) {
+       newMotionMagic = true;
+       motionMagicCounter = 0;
+     }
+
     // check if targetPosition is in range
     if(targetPosition > ShelbowConstants.upPosition) {
-      targetPosition = ShelbowConstants.upPosition;
+      setTargetPosition(ShelbowConstants.upPosition);
     } else if(targetPosition < ShelbowConstants.downPosition) {
-      targetPosition = ShelbowConstants.downPosition;
+      setTargetPosition(ShelbowConstants.downPosition);
     }
 
     // Do It!!!
@@ -219,10 +230,27 @@ public class ShelbowSubsystem extends SubsystemBase {
   */
   @Override
   public void periodic() {
+
     boolean changed = false;
 
     // handle the pulse width sensor
     initQuadrature();
+
+    // SAFETY - set target to current position if enough time passes
+    // if motion magic just started, increment the counter
+    // if(newMotionMagic) {
+    //   motionMagicCounter++;
+    // }
+
+    // after the motion magic has run long enough, make target = current position
+    // if(motionMagicCounter > 200 && newMotionMagic) {
+    //    newMotionMagic = false;
+       
+    //    if(targetPosition != getPosition())
+    //      setTargetPosition(getPosition());
+    // }
+
+
 
     // if targetPosition has changed since MM was last called, call MM again
     if(lastExecutedPosition != targetPosition)
@@ -234,35 +262,25 @@ public class ShelbowSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("shelbow angle", getAngle());
       SmartDashboard.putNumber("shelbow yOffset", yOffset);
 
+      SmartDashboard.putBoolean("new motion magic", newMotionMagic);
+      SmartDashboard.putNumber("motion magic counter", motionMagicCounter);
+
       // if the following values change in Smart Dashboard, update them locally
-      // motion magic will then use the values the next time targetPosition changes
-      // int sdVel = (int) SmartDashboard.getNumber("shelbow velocity", maxVelocity);
-      // if(sdVel != maxVelocity) {
-      //   maxVelocity = sdVel;
-      //   motorMaster.configMotionCruiseVelocity(maxVelocity, ShelbowConstants.timeoutMs);
-      // }
+      // if(gains.kPUpdated())
+      //   motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.timeoutMs);
 
-      // int sdAccel = (int) SmartDashboard.getNumber("shelbow acceleration", maxAcceleration);
-      // if(sdAccel != maxAcceleration) {
-      //   this.maxAcceleration = sdAccel;
-      //   motorMaster.configMotionAcceleration(maxAcceleration, ShelbowConstants.timeoutMs);
-      // }
+      // if(gains.kIUpdated())
+      //   motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.timeoutMs);
 
-      if(gains.kPUpdated())
-        motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.timeoutMs);
+      // if(gains.kDUpdated())
+      //   motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.timeoutMs);
 
-      if(gains.kIUpdated())
-        motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.timeoutMs);
-
-      if(gains.kDUpdated())
-        motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.timeoutMs);
-
-      if(gains.kFUpdated())
-        motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.timeoutMs);
+      // if(gains.kFUpdated())
+      //   motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.timeoutMs);
       
-      int sdTargetPosition = (int) SmartDashboard.getNumber("shelbow target", targetPosition);
-      if(sdTargetPosition != targetPosition)
-        setTargetPosition(sdTargetPosition);
+      // int sdTargetPosition = (int) SmartDashboard.getNumber("shelbow target", targetPosition);
+      // if(sdTargetPosition != targetPosition)
+      //   setTargetPosition(sdTargetPosition);
 
     }
     

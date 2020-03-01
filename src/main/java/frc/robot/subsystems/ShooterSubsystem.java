@@ -27,8 +27,8 @@ public class ShooterSubsystem extends SubsystemBase {
   private final Gains gains;
   private final Conversions conversions = new Conversions();
 
-  double topTargetRPM = ShooterConstants.closestRangeTopRPM;
-  double bottomTargetRPM = ShooterConstants.closestRangeBottomRPM;
+  double topTargetRPM = ShooterConstants.autonIntakeShootTopRPM;
+  double bottomTargetRPM = ShooterConstants.autonIntakeShootBottomRPM;
   double distance;
   
   public ShooterSubsystem(boolean tunable) {
@@ -37,7 +37,7 @@ public class ShooterSubsystem extends SubsystemBase {
     // kP, kI, kD, kF
     // gains = new Gains(1.65, 0.0, 40.0, 0.6, m_tunable, "shooter top");
 
-    gains = new Gains(0.140, 0.001, 20.0, 0.0, m_tunable, "shooter");
+    gains = new Gains(0.30, 0.002, 20.0, 0.0, m_tunable, "shooter");
 
 
     // config factory defaults for top and bottom

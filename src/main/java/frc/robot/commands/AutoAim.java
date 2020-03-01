@@ -38,7 +38,7 @@ public class AutoAim extends CommandBase {
     m_drive = drive;
 
     //turnGains = new Gains(DriveConstants.turnKp, DriveConstants.turnKi, DriveConstants.turnKd, true, "turn gains");
-    turnGains = new Gains(DriveConstants.turnKp, DriveConstants.turnKi, DriveConstants.turnKd, true, "turn gains");
+    turnGains = new Gains(DriveConstants.turnKp, DriveConstants.turnKi, DriveConstants.turnKd, true, "aa turn gains");
     pid = new PID(turnGains, 0);
     conversions = new Conversions();
   }
@@ -81,8 +81,8 @@ public class AutoAim extends CommandBase {
       // calculate yOffset from current distance
       yOffset = conversions.getRangedValue1FromValue2(ShelbowConstants.yRangeBottom, ShelbowConstants.yRangeTop, ShooterConstants.closestRangeInches, ShooterConstants.farthestRangeInches, distance);
 
-      if(yOffset > Constants.ShelbowConstants.yRangeTop) 
-        yOffset = Constants.ShelbowConstants.yRangeTop;
+      if(yOffset > Constants.ShelbowConstants.yRangeMax) 
+        yOffset = Constants.ShelbowConstants.yRangeMax;
         
       if(yOffset < 0) yOffset = 0;
 

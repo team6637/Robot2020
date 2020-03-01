@@ -18,10 +18,13 @@ public class DriveToDistanceCommand extends CommandBase {
 
   private final Gains driveGains;
   private final PID pid;
-  double drivePower, error, m_targetDistance, currentDistance;
+  double drivePower, error, m_targetDistance, currentDistance, turnCorrection;
   private final DriveSubsystem m_drive;
   private final double tolerance = Units.inchesToMeters(3);
   private int onTargetCounter = 0;
+
+  double turnKP = 0.3;
+
   /**
    * Creates a new DriveToDistanceCommand.
    */
@@ -29,6 +32,8 @@ public class DriveToDistanceCommand extends CommandBase {
     m_drive = drive;
     m_targetDistance = targetDistance;
     SmartDashboard.putNumber("dtd target", targetDistance);
+    SmartDashboard.putNumber("dtd turn kp", turnKP);
+
 
     addRequirements(drive);
     driveGains = new Gains(12, 0, 50, true, "dtd drive gains"); 
@@ -41,6 +46,7 @@ public class DriveToDistanceCommand extends CommandBase {
   public void initialize() {
 
     m_drive.resetEncoders();
+    m_drive.resetAngle();
 
   }
 
@@ -63,15 +69,19 @@ public class DriveToDistanceCommand extends CommandBase {
 
     drivePower = pid.getCorrection(currentDistance);
 
-    if(drivePower > 0.5)
-      drivePower = 0.5;
+    if(drivePower > 0.6)
+      drivePower = 0.6;
 
-    if(drivePower < -0.5)
-      drivePower = -0.5;
+    if(drivePower < -0.6)
+      drivePower = -0.6;
 
     SmartDashboard.putNumber("dtd drive power", drivePower);
 
-    m_drive.autonDrive(drivePower, 0);
+    // correction = currentAngle * turnKP
+    turnKP = SmartDashboard.getNumber("dtd turn kp", turnKP);
+    turnCorrection = m_drive.getAngle() * turnKP;
+
+    m_drive.autonDrive(drivePower, turnCorrection);
 
     if (Math.abs(error) < tolerance) {
       onTargetCounter++;

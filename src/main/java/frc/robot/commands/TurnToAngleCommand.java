@@ -18,7 +18,8 @@ public class TurnToAngleCommand extends CommandBase {
   private final PID pid;
   double turnPower, error, m_targetAngle, currentAngle;
   private final DriveSubsystem m_drive;
-  private final double tolerance = 0.5;
+  private final double tolerance = 3;
+  private int count = 0;
 
   /**
    * Creates a new TurnToAngleCommand.
@@ -26,10 +27,9 @@ public class TurnToAngleCommand extends CommandBase {
   public TurnToAngleCommand(DriveSubsystem drive, double targetAngle) {
     m_drive = drive;
     m_targetAngle = Math.IEEEremainder(targetAngle, 360);
-    SmartDashboard.putNumber("tta target", targetAngle);
 
     addRequirements(drive);
-    turnGains = new Gains(.055, 0, 0, false, "tta turn gains");
+    turnGains = new Gains(.24, 0, 0, true, "tta turn gains");
     pid = new PID(turnGains, targetAngle);
 
   }
@@ -38,9 +38,8 @@ public class TurnToAngleCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-
+    SmartDashboard.putNumber("tta target", m_targetAngle);
     m_drive.resetAngle();
-
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -60,11 +59,17 @@ public class TurnToAngleCommand extends CommandBase {
     turnPower = 0.5;
 
     if(turnPower < -0.5) 
-    turnPower = -0.5;
+      turnPower = -0.5;
 
     SmartDashboard.putNumber("tta turn power", turnPower);  
 
     m_drive.autonDrive(0, -turnPower);
+
+    if (Math.abs(error) < tolerance) {
+      count++;
+    } else {
+      count = 0;
+    }
   }
 
   // Called once the command ends or is interrupted.
@@ -76,7 +81,7 @@ public class TurnToAngleCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (Math.abs(error) < tolerance)
+    if(count > 10)
       return true;
     
     return false;

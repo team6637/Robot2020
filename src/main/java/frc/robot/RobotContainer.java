@@ -3,11 +3,11 @@ package frc.robot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-//import frc.robot.commands.CPSpinCommand;
+import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.commands.DriveToDistanceCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.Constants.ShelbowConstants;
-//import frc.robot.commands.TurnToAngleCommand;
 import frc.robot.commands.AutoAim;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.ExtenderSubsystem;
@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -49,6 +50,7 @@ public class RobotContainer {
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(true); 
   private final SpinnerSubsystem spinnerSubsystem = new SpinnerSubsystem();
   private final WinchSubsystem winchSubsystem = new WinchSubsystem();
+  
 
   // pass the shelbow talon into the driveSubsystem's contstuctor to give to the gyro
   private final DriveSubsystem driveSubsystem = new DriveSubsystem(true);
@@ -66,16 +68,11 @@ public class RobotContainer {
    * Commands
    * 
    */
-  // AIM COMMAND
-
-
-  // SHOOT COMMAND
-
 
   // TEST COMMAND
   private final Command m_ttaTest = new SequentialCommandGroup(
-    //new TurnToAngleCommand(driveSubsystem, 90),
-    new DriveToDistanceCommand(driveSubsystem, 1)
+    //new TurnToAngleCommand(driveSubsystem, 30)
+    new DriveToDistanceCommand(driveSubsystem, 2)
   );
 
 
@@ -88,26 +85,96 @@ public class RobotContainer {
 
   // SHOOT, DRIVE BACKWARD
   private final Command shootDriveBackCommand = new SequentialCommandGroup(
+    // set shelbow
     new InstantCommand(() -> shelbowSubsystem.setTargetPosition(ShelbowConstants.autonPositionFrontCenter), shelbowSubsystem),
     new WaitCommand(4).withInterrupt(()-> shelbowSubsystem.atSetpoint()),
+
+    // spin up shooter
     new InstantCommand(() -> shooterSubsystem.setVelocityFromAngle(shelbowSubsystem.getAngleWithoutYOffset()), shooterSubsystem),
     new WaitCommand(4).withInterrupt(()-> shooterSubsystem.atSetpoint()),
+
+    // push balls through
     new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
     new WaitCommand(3),
+
+    // stop
     new ParallelCommandGroup(
       new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
       new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
     ),
+
+    // drive
     new DriveToDistanceCommand(driveSubsystem, 1)
   );
 
   // SHOOT, DRIVE FORWARD, DRIVE BACKWARD
   private final Command shootDriveForwardBackCommand = new SequentialCommandGroup(
+    // set shelbow
+    new InstantCommand(() -> shelbowSubsystem.setTargetPosition(ShelbowConstants.autonPositionFrontCenter), shelbowSubsystem),
+    new WaitCommand(4).withInterrupt(()-> shelbowSubsystem.atSetpoint()),
+
+    // spin up shooter
     new InstantCommand(() -> shooterSubsystem.setVelocityFromAngle(shelbowSubsystem.getAngleWithoutYOffset()), shooterSubsystem),
     new WaitCommand(4).withInterrupt(()-> shooterSubsystem.atSetpoint()),
-    new InstantCommand(indexerSubsystem::forward, indexerSubsystem).withTimeout(3),
-    new DriveToDistanceCommand(driveSubsystem, .5),
-    new DriveToDistanceCommand(driveSubsystem, -1.5)
+
+    // push balls through
+    new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
+    new WaitCommand(3),
+
+    // stop
+    new ParallelCommandGroup(
+      new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
+      new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
+    ),
+
+    // drive forward, then back
+    new DriveToDistanceCommand(driveSubsystem, -0.5),
+    new DriveToDistanceCommand(driveSubsystem, 1.5)
+  );
+
+
+  // INTAKE SHOOT
+  private final Command intakeShoot = new SequentialCommandGroup(
+    // drive and intake 2 balls
+    new ParallelRaceGroup(
+      new DriveToDistanceCommand(driveSubsystem, Units.inchesToMeters(132)),
+      new IntakeCommand(intakeSubsystem, indexerSubsystem, shelbowSubsystem, shooterSubsystem)
+    ),
+
+    // turn to target
+    new ParallelCommandGroup(
+      //back off balls
+      new ParallelCommandGroup(
+        new RunCommand(() -> indexerSubsystem.backwardSlow(), indexerSubsystem),
+        new RunCommand(() -> shooterSubsystem.backward(), shooterSubsystem)
+      ).withInterrupt(() -> !indexerSubsystem.getBallSensorTop()).withTimeout(1.2).andThen(
+        new ParallelCommandGroup(
+          new InstantCommand(indexerSubsystem::stop, indexerSubsystem),
+          new InstantCommand(shooterSubsystem::stop, shooterSubsystem)
+        )
+      ),
+      // set shelbow
+      new InstantCommand(() -> shelbowSubsystem.setTargetPosition(ShelbowConstants.autonPositionTrenchFar),
+      shelbowSubsystem),
+      // turn towards target
+      new TurnToAngleCommand(driveSubsystem, 11.75),
+      new WaitCommand(2).withInterrupt(()-> shelbowSubsystem.atSetpoint())
+    ),
+
+    // drive forward
+    new DriveToDistanceCommand(driveSubsystem, Units.inchesToMeters(-72)),
+
+    //shoot
+    new InstantCommand(shooterSubsystem::setVelocity, shooterSubsystem),
+    new WaitCommand(2.5).withInterrupt(()-> shooterSubsystem.atSetpoint()),
+    new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
+    new WaitCommand(4),
+
+    // stop
+    new ParallelCommandGroup(
+      new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
+      new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
+    )
   );
 
 
@@ -126,9 +193,10 @@ public class RobotContainer {
     );
     
     // Add commands to the autonomous command chooser
-    m_chooser.addOption("Test Auto", m_ttaTest);
+    m_chooser.addOption("Intake Shoot", intakeShoot);
     m_chooser.addOption("Shoot Drive Back", shootDriveBackCommand);
     m_chooser.addOption("Shoot Drive Forward Back", shootDriveForwardBackCommand);
+    m_chooser.addOption("Test Auto", m_ttaTest);
 
     // Put the chooser on the dashboard
     Shuffleboard.getTab("Autonomous").add(m_chooser);
@@ -287,7 +355,7 @@ public class RobotContainer {
 
 
     /**
-     * Auto Align 
+     * Auto Align
      */
     new JoystickButton(driverStick, 3).whenHeld(
       new AutoAim(limelightSubsystem, driveSubsystem, shelbowSubsystem) 
@@ -344,7 +412,10 @@ public class RobotContainer {
   
     // climb
     new JoystickButton(operatorStick, 6).whenPressed(
-      new InstantCommand(winchSubsystem::liftoff, winchSubsystem)
+      new ParallelCommandGroup(
+        new InstantCommand(shelbowSubsystem::goToNearlyUpPosition, shelbowSubsystem),
+        new InstantCommand(winchSubsystem::liftoff, winchSubsystem)
+      )
     ).whenReleased(
       new InstantCommand(winchSubsystem::stop, winchSubsystem)
     );

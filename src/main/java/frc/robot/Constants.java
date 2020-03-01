@@ -80,7 +80,7 @@ public final class Constants {
         // PWM
         public static final int motorPort = 7;
 
-        public static final double speed = 0.65;
+        public static final double speed = 0.8;
     }
 
     
@@ -96,20 +96,29 @@ public final class Constants {
         public static final int slaveID = 8;
 
         public static final int ticksPerDegrees = 11;
-        public static final int absoluteEncoderAngleOffset = 62;  
         public static final int timeoutMs = 30;
 
         public static final double yRangeBottom = 0;
-        public static final double yRangeTop = 6;
-
-        public static final int downPosition = 842;
-        public static final int centerPosition = 1048;
-        public static final int upPosition = 1209;
-
-        public static final int autonPositionFrontCenter = 1100;
+        public static final double yRangeTop = 7;
+        public static final double yRangeMax = 9;
 
         public static final int onTargetThreshold = 50;
 
+
+
+
+        // actual angle when arm is down: 15.65 degrees
+        // actual angle when arm is up: 47.75 degrees
+        public static final double absoluteEncoderAngleOffset = 56;  
+
+        public static final int downPosition = 796;
+        public static final int centerPosition = 971;
+        public static final int upPosition = 1145;
+
+        public static final int autonPositionFrontCenter = 1080;
+        public static final int autonPositionTrenchClose = 1050;
+        public static final int autonPositionTrenchFar = 1065;
+        
     }
 
 
@@ -140,6 +149,9 @@ public final class Constants {
         public static final int topMotorID = 6;
         public static final int bottomMotorID = 7;
 
+        public static final int autonIntakeShootTopRPM = 1800;
+        public static final int autonIntakeShootBottomRPM = 3900;
+
         public static final double speed = 0.5;
         public static final double backSpeed = -0.55;
         public static final double unitsPerRotation = 4096.0;
@@ -154,14 +166,19 @@ public final class Constants {
         public static final double closestRangeInches = 120.0;
         public static final double farthestRangeInches = 240.0;
 
-        public static final double closestRangeTopRPM = 2000;
-        public static final double farthestRangeTopRPM = 3000;
-        
-        public static final double closestRangeBottomRPM = 3700;
-        public static final double farthestRangeBottomRPM = 4400;
+        public static final double closestRangeTopRPM = 1800;
+        public static final double closestRangeBottomRPM = 3600;
 
-        public static final double RPMLowLimit = 2000;
-        public static final double RPMHighLimit = 5500;
+        // 20 foot stats
+        public static final double farthestRangeTopRPM = 3200;
+        public static final double farthestRangeBottomRPM = 4800;
+
+        // 25 foot stats with y offset 8
+        public static final double farthestRangeTopRPM25 = 3000;
+        public static final double farthestRangeBottomRPM25 = 4800;
+
+        public static final double RPMLowLimit = 3500;
+        public static final double RPMHighLimit = 4900;
     }
 
 

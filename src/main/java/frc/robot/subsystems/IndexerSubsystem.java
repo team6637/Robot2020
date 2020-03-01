@@ -77,10 +77,6 @@ public class IndexerSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if(m_tunable)
-      SmartDashboard.putBoolean("ball sensor bottom", getBallSensor());
-      SmartDashboard.putBoolean("ball sensor top", getBallSensorTop());
-      
 
     // check if sensor sees ball
     if(getBallSensor()) {
@@ -90,6 +86,12 @@ public class IndexerSubsystem extends SubsystemBase {
       }
     } else {
       ballTopIsSensed = false;
+    }
+
+    if(m_tunable) {
+      SmartDashboard.putBoolean("ball sensor bottom", getBallSensor());
+      SmartDashboard.putBoolean("ball sensor top", getBallSensorTop());
+      SmartDashboard.putNumber("balls shot", ballsShot);
     }
   }
 

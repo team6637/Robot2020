@@ -4,13 +4,12 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.CalibrationMode;
+
+import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
 
@@ -23,7 +22,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftMaster, rightMaster);
 
-  private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
+  //private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
   //private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(kinematics, );
 
   private final Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
@@ -32,6 +31,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final PigeonIMU gyro;
   private final boolean m_tunable;
+
+  private final Gyro gyroKOP = new ADXRS450_Gyro();
 
   public DriveSubsystem(boolean tunable) {
     m_tunable = tunable;
@@ -60,7 +61,7 @@ public class DriveSubsystem extends SubsystemBase {
     rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
 
     gyro = new PigeonIMU(rightSlave);
-    calibrateGyro();
+    //calibrateGyro();
   }
 
   //public Rotation2d getHeading() {
@@ -77,8 +78,9 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void stop() {
-    drive.arcadeDrive(0, 0);
+    drive.arcadeDrive(0, 0);    
   }
+
 
   public double getLeftDistance(){
     return leftEncoder.getDistance();
@@ -111,9 +113,14 @@ public class DriveSubsystem extends SubsystemBase {
     return ypr[0];
   }
 
+  public double getAngleKOP() {
+    return gyroKOP.getAngle();
+  }
+
   public void resetAngle() {
     gyro.setYaw(0);
     gyro.setFusedHeading(0);
+    gyroKOP.reset();
   }
 
   public void calibrateGyro(){
@@ -130,6 +137,8 @@ public class DriveSubsystem extends SubsystemBase {
     if(m_tunable) {
       SmartDashboard.putNumber("gyro angle", getAngle());
       SmartDashboard.putNumber("gyro heading", getHeading());
+      SmartDashboard.putNumber("gyroKOP angle", getAngleKOP());
+
       SmartDashboard.putNumber("left encoder", getLeftDistance());
       SmartDashboard.putNumber("right encoder", getRightDistance());      
     }
