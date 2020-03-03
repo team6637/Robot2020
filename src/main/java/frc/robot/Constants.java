@@ -113,7 +113,7 @@ public final class Constants {
 
         public static final int downPosition = 796;
         public static final int centerPosition = 971;
-        public static final int upPosition = 1145;
+        public static final int upPosition = 1170;
 
         public static final int autonPositionFrontCenter = 1080;
         public static final int autonPositionTrenchClose = 1050;

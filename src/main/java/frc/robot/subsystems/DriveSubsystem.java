@@ -4,11 +4,8 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.CalibrationMode;
-
-import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.interfaces.Gyro;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
@@ -31,8 +28,6 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final PigeonIMU gyro;
   private final boolean m_tunable;
-
-  private final Gyro gyroKOP = new ADXRS450_Gyro();
 
   public DriveSubsystem(boolean tunable) {
     m_tunable = tunable;
@@ -113,14 +108,9 @@ public class DriveSubsystem extends SubsystemBase {
     return ypr[0];
   }
 
-  public double getAngleKOP() {
-    return gyroKOP.getAngle();
-  }
-
   public void resetAngle() {
     gyro.setYaw(0);
     gyro.setFusedHeading(0);
-    gyroKOP.reset();
   }
 
   public void calibrateGyro(){
@@ -137,7 +127,6 @@ public class DriveSubsystem extends SubsystemBase {
     if(m_tunable) {
       SmartDashboard.putNumber("gyro angle", getAngle());
       SmartDashboard.putNumber("gyro heading", getHeading());
-      SmartDashboard.putNumber("gyroKOP angle", getAngleKOP());
 
       SmartDashboard.putNumber("left encoder", getLeftDistance());
       SmartDashboard.putNumber("right encoder", getRightDistance());      

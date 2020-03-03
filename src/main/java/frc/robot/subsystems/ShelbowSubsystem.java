@@ -34,6 +34,7 @@ public class ShelbowSubsystem extends SubsystemBase {
   private int maxAcceleration = 50;
 
   private boolean newMotionMagic = false;
+  private boolean motionMagicCorrection = false;
   private int motionMagicCounter = 0;
 
   public ShelbowSubsystem(boolean tunable) {
@@ -197,10 +198,12 @@ public class ShelbowSubsystem extends SubsystemBase {
     if(m_tunable)
       SmartDashboard.putNumber("Motion Control Starting", Math.random());
 
-     if(!newMotionMagic) {
-       newMotionMagic = true;
-       motionMagicCounter = 0;
-     }
+    if(motionMagicCorrection) {
+      motionMagicCorrection = false;
+    } else {
+      newMotionMagic = true;
+    }
+    motionMagicCounter = 0;
 
     // check if targetPosition is in range
     if(targetPosition > ShelbowConstants.upPosition) {
@@ -236,25 +239,28 @@ public class ShelbowSubsystem extends SubsystemBase {
     // handle the pulse width sensor
     initQuadrature();
 
-    // SAFETY - set target to current position if enough time passes
-    // if motion magic just started, increment the counter
-    // if(newMotionMagic) {
-    //   motionMagicCounter++;
-    // }
+    //SAFETY - set target to current position if enough time passes
+    //if motion magic just started, increment the counter
+    if(newMotionMagic) {
+      motionMagicCounter++;
+    }
 
-    // after the motion magic has run long enough, make target = current position
-    // if(motionMagicCounter > 200 && newMotionMagic) {
-    //    newMotionMagic = false;
+    // SAFETY BURN PROTECTION
+    //after the motion magic has run long enough, make target = current position
+    if(motionMagicCounter > 300 && newMotionMagic) {
+       newMotionMagic = false;
+       motionMagicCorrection = true;
        
-    //    if(targetPosition != getPosition())
-    //      setTargetPosition(getPosition());
-    // }
-
-
+       if((targetPosition < ShelbowConstants.downPosition + 40 || targetPosition > ShelbowConstants.upPosition - 40) && targetPosition != getPosition())
+         setTargetPosition(getPosition());
+    }
 
     // if targetPosition has changed since MM was last called, call MM again
     if(lastExecutedPosition != targetPosition)
       changed = true;
+
+
+
 
     // tune from Smart Dashboard
     if(m_tunable) {
