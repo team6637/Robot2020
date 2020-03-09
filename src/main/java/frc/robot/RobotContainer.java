@@ -50,9 +50,6 @@ public class RobotContainer {
   private final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(true); 
   private final SpinnerSubsystem spinnerSubsystem = new SpinnerSubsystem();
   private final WinchSubsystem winchSubsystem = new WinchSubsystem();
-  
-
-  // pass the shelbow talon into the driveSubsystem's contstuctor to give to the gyro
   private final DriveSubsystem driveSubsystem = new DriveSubsystem(true);
 
   // setup auton dropdown
@@ -193,7 +190,7 @@ public class RobotContainer {
     );
     
     // Add commands to the autonomous command chooser
-    m_chooser.addOption("Intake Shoot", intakeShoot);
+    m_chooser.setDefaultOption("Intake Shoot", intakeShoot);
     m_chooser.addOption("Shoot Drive Back", shootDriveBackCommand);
     m_chooser.addOption("Shoot Drive Forward Back", shootDriveForwardBackCommand);
     m_chooser.addOption("Test Auto", m_ttaTest);
@@ -316,13 +313,13 @@ public class RobotContainer {
       new ConditionalCommand(
         // if true
         new ParallelCommandGroup(
-         new InstantCommand(indexerSubsystem::forward, indexerSubsystem),
-         new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
+         new InstantCommand(indexerSubsystem::forward, indexerSubsystem)
+         //new InstantCommand(intakeSubsystem::acquire, intakeSubsystem)
         ),
         // if false
         new ParallelCommandGroup(
-          new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
           new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
+          //new InstantCommand(intakeSubsystem::stop, intakeSubsystem)
         ),
         // the condition
         shooterSubsystem::atSetpoint
@@ -331,7 +328,7 @@ public class RobotContainer {
     // button released: stop intake, back balls up a scootch in indexer, then stop it
     ).whenReleased(
       new ParallelCommandGroup(
-        new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
+        //new InstantCommand(intakeSubsystem::stop, intakeSubsystem),
         new InstantCommand(shooterSubsystem::stop, shooterSubsystem),
         new InstantCommand(indexerSubsystem::stop, indexerSubsystem)
       )
@@ -412,10 +409,10 @@ public class RobotContainer {
   
     // climb
     new JoystickButton(operatorStick, 6).whenPressed(
-      new ParallelCommandGroup(
-        new InstantCommand(shelbowSubsystem::goToNearlyUpPosition, shelbowSubsystem),
+      //new ParallelCommandGroup(
+        //new InstantCommand(shelbowSubsystem::goToNearlyUpPosition, shelbowSubsystem),
         new InstantCommand(winchSubsystem::liftoff, winchSubsystem)
-      )
+      //)
     ).whenReleased(
       new InstantCommand(winchSubsystem::stop, winchSubsystem)
     );

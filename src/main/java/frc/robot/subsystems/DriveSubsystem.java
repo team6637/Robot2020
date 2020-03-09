@@ -22,7 +22,7 @@ public class DriveSubsystem extends SubsystemBase {
   //private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
   //private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(kinematics, );
 
-  private final Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
+ // private final Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
   
   private final Encoder rightEncoder = new Encoder(DriveConstants.rightEncoderPortA, DriveConstants.rightEncoderPortB, true, Encoder.EncodingType.k4X);
 
@@ -48,10 +48,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     drive.setRightSideInverted(false);
 
-    leftEncoder.setReverseDirection(true);
+   // leftEncoder.setReverseDirection(true);
     rightEncoder.setReverseDirection(false);
 
-    leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
+    //leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
 
     rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
 
@@ -64,7 +64,7 @@ public class DriveSubsystem extends SubsystemBase {
  // }
 
   public void arcadeDrive(double move, double turn){
-    turn = turn * 0.7;
+    turn = turn * 0.6;
     drive.arcadeDrive(move, turn, true);
   }
 
@@ -77,13 +77,13 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
 
-  public double getLeftDistance(){
-    return leftEncoder.getDistance();
-  }
+  // public double getLeftDistance(){
+  //   return leftEncoder.getDistance();
+  // }
 
-  public double getLeftRate(){
-    return leftEncoder.getRate();	
-  }    
+  // public double getLeftRate(){
+  //   return leftEncoder.getRate();	
+  // }    
 
   public double getRightDistance(){
     return rightEncoder.getDistance();
@@ -94,11 +94,11 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getAverageDistance(){
-    return (getLeftDistance() + getRightDistance()) / 2;
+    return (getRightDistance());
   }
 
   public void resetEncoders(){
-    leftEncoder.reset();
+   // leftEncoder.reset();
     rightEncoder.reset();
   }
   
@@ -128,7 +128,7 @@ public class DriveSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("gyro angle", getAngle());
       SmartDashboard.putNumber("gyro heading", getHeading());
 
-      SmartDashboard.putNumber("left encoder", getLeftDistance());
+      //SmartDashboard.putNumber("left encoder", getLeftDistance());
       SmartDashboard.putNumber("right encoder", getRightDistance());      
     }
   }

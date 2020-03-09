@@ -102,7 +102,7 @@ public final class Constants {
         public static final double yRangeTop = 7;
         public static final double yRangeMax = 9;
 
-        public static final int onTargetThreshold = 50;
+        public static final int onTargetThreshold = 100;
 
 
 

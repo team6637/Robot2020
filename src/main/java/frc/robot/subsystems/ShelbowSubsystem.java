@@ -272,17 +272,17 @@ public class ShelbowSubsystem extends SubsystemBase {
       SmartDashboard.putNumber("motion magic counter", motionMagicCounter);
 
       // if the following values change in Smart Dashboard, update them locally
-      // if(gains.kPUpdated())
-      //   motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.timeoutMs);
+      if(gains.kPUpdated())
+        motorMaster.config_kP(0, gains.getKP(), ShelbowConstants.timeoutMs);
 
-      // if(gains.kIUpdated())
-      //   motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.timeoutMs);
+      if(gains.kIUpdated())
+        motorMaster.config_kI(0, gains.getKI(), ShelbowConstants.timeoutMs);
 
-      // if(gains.kDUpdated())
-      //   motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.timeoutMs);
+      if(gains.kDUpdated())
+        motorMaster.config_kD(0, gains.getKD(), ShelbowConstants.timeoutMs);
 
-      // if(gains.kFUpdated())
-      //   motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.timeoutMs);
+      if(gains.kFUpdated())
+        motorMaster.config_kF(0, gains.getKF(), ShelbowConstants.timeoutMs);
       
       // int sdTargetPosition = (int) SmartDashboard.getNumber("shelbow target", targetPosition);
       // if(sdTargetPosition != targetPosition)
