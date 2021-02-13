@@ -28,11 +28,10 @@ public class ExtenderSubsystem extends SubsystemBase {
   }
 
   public void retract(){
-    extenderMotor.set(-ExtenderConstants.speed);
+    extenderMotor.set(ExtenderConstants.downSpeed);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
   }
 }

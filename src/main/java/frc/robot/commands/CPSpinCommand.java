@@ -38,7 +38,7 @@ public class CPSpinCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if(m_subsystem.getPosition() > SpinnerConstants.spinCPCounts){
+    if(m_subsystem.getPosition() > SpinnerConstants.targetUnitsForTargetSpins){
       return true;
     }
     return false;

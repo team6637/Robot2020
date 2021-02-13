@@ -4,12 +4,11 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.ctre.phoenix.sensors.PigeonIMU;
 import com.ctre.phoenix.sensors.PigeonIMU.CalibrationMode;
-
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriveConstants;
-
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -20,44 +19,71 @@ public class DriveSubsystem extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftMaster, rightMaster);
 
-  // initiate encoders
-  Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
-  Encoder rightEncoder = new Encoder(DriveConstants.rightEncoderPortA, DriveConstants.rightEncoderPortB, true, Encoder.EncodingType.k4X);
+  //private final DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(28));
+  //private final DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(kinematics, );
 
-  // gyro
-  PigeonIMU gyro;
+ // private final Encoder leftEncoder = new Encoder(DriveConstants.leftEncoderPortA, DriveConstants.leftEncoderPortB, false, Encoder.EncodingType.k4X);
+  
+  private final Encoder rightEncoder = new Encoder(DriveConstants.rightEncoderPortA, DriveConstants.rightEncoderPortB, true, Encoder.EncodingType.k4X);
 
-  public DriveSubsystem(WPI_TalonSRX shelbowMaster) {
+  private final PigeonIMU gyro;
+  private final boolean m_tunable;
 
-    // pass the shelbow talon into the gyro so the gyro knows which talon it's plugged into
-    gyro = new PigeonIMU(shelbowMaster);
+  public DriveSubsystem(boolean tunable) {
+    m_tunable = tunable;
 
     leftMaster.setNeutralMode(NeutralMode.Coast);
     leftSlave.setNeutralMode(NeutralMode.Coast);
+
+    leftMaster.setInverted(false);
+    leftSlave.setInverted(false);
+    rightMaster.setInverted(true);
+    rightSlave.setInverted(true);
+
     rightMaster.setNeutralMode(NeutralMode.Coast);
     rightSlave.setNeutralMode(NeutralMode.Coast);
 
     leftSlave.follow(leftMaster);
     rightSlave.follow(rightMaster);
 
-    //DIO ports
-    leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
-    rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution); 
+    drive.setRightSideInverted(false);
 
+   // leftEncoder.setReverseDirection(true);
+    rightEncoder.setReverseDirection(false);
+
+    //leftEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
+
+    rightEncoder.setDistancePerPulse(Math.PI * DriveConstants.wheelDiameter / DriveConstants.pulsePerRevolution);
+
+    gyro = new PigeonIMU(rightSlave);
+    //calibrateGyro();
   }
+
+  //public Rotation2d getHeading() {
+   // return Rotation2d.fromDegrees(gyro.getAngle());
+ // }
 
   public void arcadeDrive(double move, double turn){
     turn = turn * 0.6;
+    drive.arcadeDrive(move, turn, true);
+  }
+
+  public void autonDrive(double move, double turn){
     drive.arcadeDrive(move, turn);
   }
 
-  public double getLeftDistance(){
-    return -leftEncoder.getDistance();
+  public void stop() {
+    drive.arcadeDrive(0, 0);    
   }
 
-  public double getLeftRate(){
-    return leftEncoder.getRate();	
-  }    
+
+  // public double getLeftDistance(){
+  //   return leftEncoder.getDistance();
+  // }
+
+  // public double getLeftRate(){
+  //   return leftEncoder.getRate();	
+  // }    
 
   public double getRightDistance(){
     return rightEncoder.getDistance();
@@ -68,11 +94,11 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getAverageDistance(){
-    return (getLeftDistance() + getRightDistance()) / 2;
+    return (getRightDistance());
   }
 
   public void resetEncoders(){
-    leftEncoder.reset();
+   // leftEncoder.reset();
     rightEncoder.reset();
   }
   
@@ -91,8 +117,19 @@ public class DriveSubsystem extends SubsystemBase {
     gyro.enterCalibrationMode(CalibrationMode.Temperature);
   }
 
+  //Returns the heading of the robot in degrees from 180 to 180
+  public double getHeading() {
+    return Math.IEEEremainder(getAngle(), 360) * (DriveConstants.gyroReversed ? -1.0 : 1.0);
+  }
+
   @Override
   public void periodic() {
-  // This method will be called once per scheduler run
+    if(m_tunable) {
+      SmartDashboard.putNumber("gyro angle", getAngle());
+      SmartDashboard.putNumber("gyro heading", getHeading());
+
+      //SmartDashboard.putNumber("left encoder", getLeftDistance());
+      SmartDashboard.putNumber("right encoder", getRightDistance());      
+    }
   }
 }

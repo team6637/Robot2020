@@ -7,32 +7,24 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PWMSparkMax;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
 
-  PWMSparkMax intakeMotor = new PWMSparkMax(IntakeConstants.motorPort);
-
-  DoubleSolenoid solenoid = new DoubleSolenoid(2, 3);
+  private final PWMSparkMax intakeMotor = new PWMSparkMax(IntakeConstants.motorPort);
  
   public IntakeSubsystem() {
-
+    intakeMotor.setInverted(false);
   }
-
-  public void lower() {
-    solenoid.set(DoubleSolenoid.Value.kReverse);
-  }
-
-  public void raise() {
-    solenoid.set(DoubleSolenoid.Value.kForward);
-  }
-
 
   public void acquire() {
     intakeMotor.set(IntakeConstants.speed);
+  }
+
+  public void backward() {
+    intakeMotor.set(-IntakeConstants.speed);
   }
 
   public void stop() {
@@ -41,6 +33,5 @@ public class IntakeSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
   }
 }
