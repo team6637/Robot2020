@@ -151,7 +151,6 @@ public class RobotContainer {
         new InstantCommand(indexerSubsystem::stop, indexerSubsystem), 
         new InstantCommand(intakeSubsystem::stop, intakeSubsystem)      
       )
-      )
     );
 
 
